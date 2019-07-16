@@ -1,18 +1,18 @@
-The ReadMe for this project:
+The src directory contains the following:
 
 
-Main_ws
+main_node
 -------
-The workspace containing the main node that will be running constantly while the system is being executed, it will direct messages and issue service requests to other components.
+This ROS package contains the main node that will be running constantly while the system is being executed, it will direct messages and issue service requests to other components.
 
-Parser_ws
---------- 
-The workspace containing the text-to-logic-form parsing component which will tranform text into logic form understandable by the robot arm.
+parser_node
+----------- 
+This Java package contains the text-to-logic-form parsing component which will tranform text into logic form understandable by the robot arm.
 
-Speech_ws
----------
+speech_node
+-----------
 Contains the speech recording component which (for now) accepts spoken and typed input.
 
-Recognizer_ws
--------------
+recognizer_node
+---------------
 Contains the component that will transform the audio input into a textual representation.
