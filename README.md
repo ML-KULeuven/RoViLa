@@ -16,3 +16,8 @@ Contains the speech recording component which (for now) accepts spoken and typed
 recognizer_node
 ---------------
 Contains the component that will transform the audio input into a textual representation.
+
+
+
+Executing catkin_make in the root of this workspace will build the project
+
