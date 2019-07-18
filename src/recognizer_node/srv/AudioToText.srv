@@ -1,0 +1,6 @@
+string[] frames
+int64 channels
+int64 sample_format
+int64 frequency
+---
+string text

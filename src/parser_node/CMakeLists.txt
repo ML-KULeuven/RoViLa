@@ -28,6 +28,6 @@ catkin_package()
 #install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_MAVEN_DESTINATION}/com/github/rosjava/${PROJECT_NAME}/
 #        DESTINATION ${CATKIN_GLOBAL_MAVEN_DESTINATION}/com/github/rosjava/${PROJECT_NAME})
 
-install(DIRECTORY /home/svl/DTAI_Internship/devel/${CATKIN_GLOBAL_MAVEN_DESTINATION}/com/github/rosjava/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_GLOBAL_MAVEN_DESTINATION}/com/github/rosjava/${PROJECT_NAME})
+install(DIRECTORY /home/svl/DTAI_Internship/devel/share/maven/com/github/rosjava/${PROJECT_NAME}/
+        DESTINATION share/maven/com/github/rosjava/${PROJECT_NAME})
 

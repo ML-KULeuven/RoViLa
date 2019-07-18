@@ -5,6 +5,7 @@ import pyaudio as pa
 import wave
 from std_msgs.msg import String
 from speech_node.srv import *
+from recognizer_node.srv import *
 
 def record_speech_client():
    
@@ -17,28 +18,31 @@ def record_speech_client():
     frequency = 44100
     seconds = 3
 
-    p = pa.PyAudio()
-
     print("Waiting for SpeechStream service to come online")
     rospy.wait_for_service('speech_service')
 
     try:
         record_speech = rospy.ServiceProxy('speech_service', SpeechStream)
-        response = record_speech(chunk_size,sample_format,channels,frequency,seconds)
-        frames = response.stream
+        response_speech_service = record_speech(chunk_size,sample_format,channels,frequency,seconds)
+        frames = response_speech_service.stream
         print("Received the frames, ready to construct WAV file")
-        
-        wf = wave.open("output.wav", 'wb')
-        wf.setnchannels(channels)
-        wf.setsampwidth(p.get_sample_size(sample_format))
-        wf.setframerate(frequency)
-        wf.writeframes(b''.join(frames))
-        wf.close()
-
-        print("WAV file constructed, ready for further processing")
 
     except rospy.ServiceException, e:
-        print("Service call failes: %s"%e)
+        print("Service call to the speech_service failed: %s"%e)
+
+    print("Waiting for AudioToText service to come online")
+    rospy.wait_for_service('recognizer_service')
+
+    try: 
+        recognize_audio = rospy.ServiceProxy('recognizer_service', AudioToText)
+        response_recognizer_service = recognize_audio(frames,channels,sample_format,frequency)
+        text = response_recognizer_service.text
+
+        print("What was said:")
+        print(text)
+    except rospy.ServiceException, e:
+        print("Service call to the recognizer_service failed: %s"%e)
+
 
 if __name__ == "__main__":
     record_speech_client()
