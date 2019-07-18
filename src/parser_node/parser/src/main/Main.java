@@ -41,7 +41,7 @@ public class Main {
 		saveWeights(ws, "part_1-3");
 		System.err.println("DONE");*/
 
-		HashMap<String, Float> w = loadWeights("C:\\Users\\Shani\\InternshipDTAI\\codePJ\\parsing\\trained_vectors\\trained_fold_0");
+		HashMap<String, Float> w = loadWeights("~/DTAI_Internship/src/parser_node/parser/trained_vectors/trained_fold_0");
 		System.out.println(w);
 		System.err.println("LOADED");
 		/*Scanner input = new Scanner(System.in);
@@ -64,7 +64,7 @@ public class Main {
 
 	private static ArrayList<String> readFromSpeech() throws FileNotFoundException {
 		ArrayList<String> speech = new ArrayList<>();
-		File file = new File("C:\\Users\\Shani\\InternshipDTAI\\common\\speechinput.txt");
+		File file = new File("~/DTAI_Internship/src/parser_node/parser/io/speechinput.txt");
 		Scanner sc = new Scanner(file);
 		while(sc.hasNextLine()){
 			String line = sc.nextLine();
@@ -77,7 +77,7 @@ public class Main {
 	}
 
 	private static void writeToFile(ArrayList<String> logicalExpressions) throws IOException {
-		File file = new File("C:\\Users\\Shani\\InternshipDTAI\\common\\parseroutput.txt");
+		File file = new File("~/DTAI_Internship/src/parser_node/parser/io/parseroutput.txt");
 		FileOutputStream fos = new FileOutputStream(file, true);
 		for(String str : logicalExpressions){
 			fos.write(str.getBytes());
@@ -91,7 +91,7 @@ public class Main {
 		ArrayList<TrainingExample<String, LogicalExpression>> examples = new ArrayList<>();
 
 		//This points to one of the folds in the dataset folder!!
-		File file = new File("C:\\Users\\Shani\\InternshipDTAI\\codePJ\\parsing\\dataset\\fold_0");
+		File file = new File("~/DTAI_Internship/src/parser_node/parser/dataset/fold_0");
 		Scanner sc = new Scanner(file);
 		while (sc.hasNextLine()) {
 			String line = sc.nextLine();

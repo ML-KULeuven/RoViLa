@@ -1,0 +1,7 @@
+int64 chunk_size
+int64 sample_format
+int64 channels
+int64 frequency
+int64 seconds
+---
+string[] stream
