@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   speech_node
+  recognizer_node
+  parser_node
 )
 
 ## System dependencies are found with CMake's conventions

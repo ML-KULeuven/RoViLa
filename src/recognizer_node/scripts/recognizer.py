@@ -8,7 +8,7 @@ from std_msgs.msg import String
 from recognizer_node.srv import *
 
 def construct_wav_file(request):
-    filename = "audio_files.wav"
+    filename = "audio/audio_in.wav"
 
     p = pa.PyAudio()
 
@@ -46,9 +46,9 @@ def handle_recognize_speech(request):
     print("WAV file constructed")
 
     #text = transform_audio_to_text(audiofilename)
-    text = transform_audio_to_text("audio.wav")
+    text = transform_audio_to_text("audio/audio.wav")
 
-    return AudioToTextResponse("CONSTRUCTED")
+    return AudioToTextResponse(text)
 
 def recognize_speech_server():
 

@@ -6,6 +6,7 @@ import wave
 from std_msgs.msg import String
 from speech_node.srv import *
 from recognizer_node.srv import *
+from parser_node.srv import *
 
 def record_speech_client():
    
@@ -43,6 +44,21 @@ def record_speech_client():
     except rospy.ServiceException, e:
         print("Service call to the recognizer_service failed: %s"%e)
 
+    print("Waiting for ParseTextToLogicForm service to come online")
+    rospy.wait_for_service('parser_service')
+
+    try: 
+        parse_text = rospy.ServiceProxy('parser_service', ParseTextToLogicForm)
+        response_parser_service = parse_text(text)
+        parsed = response_parser_service.parsed
+        
+        print("logic form corresponding to the above text:")
+        print(parsed)
+
+    except rospy.ServiceException, e:
+        print("Service call to the parser_service failed: %s"%e)
+
+    
 
 if __name__ == "__main__":
     record_speech_client()

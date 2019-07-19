@@ -33,7 +33,7 @@ def handle_record_speech(request):
 def record_speech_server():
     rospy.init_node('speechnode')
     service = rospy.Service('speech_service', SpeechStream, handle_record_speech)
-    print "Ready to start speech service."
+    print("speech_service started")
     rospy.spin()
 
 if __name__ == "__main__":
