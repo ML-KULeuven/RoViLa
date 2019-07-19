@@ -1,3 +1,47 @@
+# Project Title
+
+One Paragraph of project description goes here
+
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+
+### Prerequisites
+
+What things you need to install the software and how to install them
+
+```
+Give examples
+```
+
+This should contain the following:
+- Version of linux, ros, python, c++,...
+- pip freeze overview
+- dependency management
+
+### Installing
+
+A step by step series of examples that tell you how to get a development env running
+
+Say what the step will be
+
+```
+Give the example
+```
+
+Atnd repeat
+
+```
+until finished
+```
+
+End with an example of getting some data out of the system or using it for a little demo
+
+This should contain:
+- Ros install instructions
+- Handling dependencies
+
+## Deployment
 The src directory contains the following:
 
 
@@ -20,4 +64,19 @@ Contains the component that will transform the audio input into a textual repres
 
 
 Executing catkin_make in the root of this workspace will build the project
+
+
+## Built With
+
+* [ROS](http://www.ros.org/) - The Robot operating system
+* [Catkin](https://www.wiki.ros.org/catkin) - Dependency Management and building nodes
+
+## Authors
+
+* **Shani Vanlerberghe** - *Deploying speech to logic for in ROS*
+* **Pieter-Jan Coenen** - *The text to logic form parser*
+
+## License
+
+## Acknowledgments
 
