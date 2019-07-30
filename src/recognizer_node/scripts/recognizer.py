@@ -6,20 +6,23 @@ import wave
 import speech_recognition as sr
 from std_msgs.msg import String
 from recognizer_node.srv import *
+from os.path import expanduser
 
 def construct_wav_file(request):
-    filename = "audio/audio_in.wav"
+
+    user = expanduser("~")
+    path = user + "/DTAI_Internship/src/recognizer_node/scripts/audio/audio_in.wav"	
 
     p = pa.PyAudio()
 
-    wf = wave.open(filename, 'wb')
+    wf = wave.open(path, 'wb')
     wf.setnchannels(request.channels)
     wf.setsampwidth(p.get_sample_size(request.sample_format))
     wf.setframerate(request.frequency)
     wf.writeframes(b''.join(request.frames))
     wf.close()
 
-    return filename
+    return path
 
 def transform_audio_to_text(filename):
 
@@ -46,7 +49,10 @@ def handle_recognize_speech(request):
     print("WAV file constructed")
 
     #text = transform_audio_to_text(audiofilename)
-    text = transform_audio_to_text("audio/audio.wav")
+    user = expanduser("~")
+    path = user + "/DTAI_Internship/src/recognizer_node/scripts/audio/audio.wav"
+
+    text = transform_audio_to_text(path)
 
     return AudioToTextResponse(text)
 

@@ -4,11 +4,14 @@ import rospy
 import subprocess
 from std_msgs.msg import String 
 from parser_node.srv import *
-
+from os.path import expanduser
 
 def handle_parse_text(request):
 
-    parsed = subprocess.check_output(['java', '-jar', 'jar/parsing.jar', 'jar/trained_vectors/trained_fold_0', request.text])
+    user = expanduser("~")
+    path = user + "/DTAI_Internship/src/parser_node/scripts/jar/"
+
+    parsed = subprocess.check_output(['java', '-jar', path + "parsing.jar", path + "trained_vectors/trained_fold_0", request.text])
     
     print("The deduced logic form: ")
     print(parsed)
