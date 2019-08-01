@@ -48,7 +48,7 @@ class Actuator:
 	--> the positive y-axis is directed towards the user when standing behind the robot (i.e facing the base plate) this mean that negative y-values will make the robot gripper move forward.
 	--> the positive z-axis is directed when facing the base plate
 	"""
-        p, q = self.generate_gripper_align_pose(position, 0.03, math.pi/2.0, 0.0, 0.0)
+        p, q = self.generate_gripper_align_pose(position, 0.0, math.pi/2.0, 0.0, 0.0)
 
 	#p, q = self.generate_gripper_align_pose(position, 0.03, math.pi/2.0, 0.0, 0.0)
 
@@ -99,6 +99,8 @@ class Actuator:
 
     def callback(self, msg):
 
+        obs_4 = None
+
         for obs in msg.observations:
             print("--------")
             print("ar_marker_{}".format(obs.id))
@@ -108,7 +110,9 @@ class Actuator:
             print("The orientation of the marker is qx:{} qy:{} qz:{} qw:{}".format(orientation.x, orientation.y, orientation.z, orientation.w))
             print("-----Pick up cube------")
             if int(obs.id) == 4:
-                self.pick_up(obs)
+                obs_4 = obs
+                
+        self.pick_up(obs_4)
             
     def pick_up(self, observation):
         
@@ -118,14 +122,22 @@ class Actuator:
 
         #secured_position = self.secure_position(transformed_pose)
 
-	secured_position = (transformed_pose.x, transformed_pose.y, transformed_pose.z)
-	
+	secured_position = (transformed_pose.x, transformed_pose.y + 0.07, transformed_pose.z - 0.04)
+
         self.go_to_aligned(secured_position)
+
+       # gripper_client([2600, 2600, 0], self.prefix)
+
+       # homeRobot(self.prefix)
 
 
     def transform(self, pose):
         transform = self.tfBuffer.lookup_transform(
                 "{}link_base".format(self.prefix), pose.header.frame_id, rospy.Time(0))
+        print(type(transform))
+        print("------------------!!!TRANSFORM!!!:---------------")
+        self.print_transform_stamped_pose(transform)
+        print("----------------------------------------------------")
         res = tf2_geometry_msgs.do_transform_pose(pose, transform)
         return res.pose.position
 
@@ -144,6 +156,13 @@ class Actuator:
         y = min(max(position.y, -1), 0.0) + 0.07
         z = max(min(position.z, 0.33), 0.02) + 0.05
         return (x, y, z)
+
+    def print_transform_stamped_pose(self, transform_stamped):
+        translation = transform_stamped.transform.translation
+        rotation = transform_stamped.transform.rotation
+
+        print("POSITION: x:{}, y={}, z:{}".format(translation.x, translation.y, translation.z))
+        print("ORIENTATION: qx:{}, qy:{}, qz:{}, gw:{}".format(rotation.x, rotation.y, rotation.z, rotation.w))
     
 
 def actuator_main():
