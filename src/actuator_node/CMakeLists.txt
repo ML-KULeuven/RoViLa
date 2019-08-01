@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(observer_node)
+project(actuator_node)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,15 +8,12 @@ project(observer_node)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-	#ar_track_alvar_msgs
-  ar_track_alvar
-  geometry_msgs
   rospy
   std_msgs
   tf2
   tf2_ros
-  message_generation
-  message_runtime
+  geometry_msgs
+  observer_node
 )
 
 ## System dependencies are found with CMake's conventions
@@ -53,11 +50,11 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  Observation.msg
-  Observations.msg
-)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -74,14 +71,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  #   ar_track_alvar_msgs
-  geometry_msgs
-  #   std_msgs
-  #   tf2_geometry_msgs
-  #   visualization_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -114,9 +107,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES observer_node
-#  CATKIN_DEPENDS ar_track_alvar_msgs geometry_msgs rospy std_msgs tf tf2_geometry_msgs tf2_ros visualization_msgs
-#  CATKIN_DEPENDS message_runtime
+#  LIBRARIES actuator_node
+#  CATKIN_DEPENDS rospy std_msgs tf2
 #  DEPENDS system_lib
 )
 
@@ -133,7 +125,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/observer_node.cpp
+#   src/${PROJECT_NAME}/actuator_node.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -144,7 +136,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/observer_node_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/actuator_node_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -170,10 +162,10 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-install(PROGRAMS
-  scripts/observer.py
-  DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
-)
+# install(PROGRAMS
+#   scripts/my_python_script
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
@@ -201,7 +193,7 @@ install(PROGRAMS
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_observer_node.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_actuator_node.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

@@ -11,20 +11,23 @@ from observer_node.msg import Observation, Observations
 
 REFERENCE_TAG_ID = 0
 ROBOT_TAG_ID = 1
+ORIGIN_FRAME = "origin"
+ROBOT_BASE_FRAME = "m1n6s200_link_base"
 
 class Observer:
 
     def __init__(self, **args):
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
-        self.broadcaster = tf2_ros.StaticTransformBroadcaster()
+        self.broadcaster = tf2_ros.TransformBroadcaster()
+        self.broadcaster_static = tf2_ros.StaticTransformBroadcaster()
         self.origin_marker_frame = "ar_marker_{}".format(REFERENCE_TAG_ID)
         self.camera_frame = "kinect2_link"
 
         self.publisher = rospy.Publisher('observer_node', Observations, queue_size=1)
         rospy.loginfo("Initialized {}".format(self))
     
-    def tranform_markers(self, msg):
+    def callback(self, msg):
         """
         This method serves as the callback for the ar_pose_marker topic to which the observer
         is subscribed. This callback method will tranform the detected ar tags and publish them
@@ -64,7 +67,7 @@ def main_observer():
     rospy.init_node('observer_node')
     obs = Observer()
 
-    rospy.Subscriber("ar_pose_marker", AlvarMarkers, obs.transform_markers, queue_size=1)
+    rospy.Subscriber("ar_pose_marker", AlvarMarkers, obs.callback, queue_size=1)
     rospy.spin()
 
 
