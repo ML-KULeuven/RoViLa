@@ -13,7 +13,7 @@ class Actuator:
 
     def __init__(self, prefix, *args, **kwargs):
         rospy.loginfo("Initializing actuator")
-       # self.quat_vertical = tf.transformations.quaternion_from_euler(180*3.1415/180, 0*3.1415/180, 0*3.1415/180, 'rxyz')
+        #self.quat_vertical = tf.transformations.quaternion_from_euler(180*3.1415/180, 0*3.1415/180, 0*3.1415/180, 'rxyz')
         self.prefix = prefix
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer, queue_size=1)
@@ -108,37 +108,43 @@ class Actuator:
             orientation = obs.pose.pose.orientation
             print("The position of the marker is x:{} y:{} z:{}".format(point.x, point.y, point.z))
             print("The orientation of the marker is qx:{} qy:{} qz:{} qw:{}".format(orientation.x, orientation.y, orientation.z, orientation.w))
-            print("-----Pick up cube------")
             if int(obs.id) == 4:
                 obs_4 = obs
                 
         self.pick_up(obs_4)
             
     def pick_up(self, observation):
+
+        print("ID: {}".format(observation.id))
         
-        transformed_pose = self.transform(observation.pose)
+        transformed_pose = self.transform(observation.pose, observation.id)
         
         rospy.loginfo("Ready to pick up item at position\n{}".format(transformed_pose))
 
         #secured_position = self.secure_position(transformed_pose)
 
-	secured_position = (transformed_pose.x, transformed_pose.y + 0.07, transformed_pose.z - 0.04)
+	secured_position = (transformed_pose.x, transformed_pose.y, transformed_pose.z)
 
         self.go_to_aligned(secured_position)
-
-       # gripper_client([2600, 2600, 0], self.prefix)
 
        # homeRobot(self.prefix)
 
 
-    def transform(self, pose):
+    def transform(self, pose, obs_id):
+        print("------------------!!!TRANSFORM!!!:---------------")
+
+       #This transform represents the transformation from origin (ar_marker_1) to the base of the robot
         transform = self.tfBuffer.lookup_transform(
                 "{}link_base".format(self.prefix), pose.header.frame_id, rospy.Time(0))
+
+        #This transform calculates the transformation from the base of the robot arm to the reference ar_marker
+
         print(type(transform))
-        print("------------------!!!TRANSFORM!!!:---------------")
         self.print_transform_stamped_pose(transform)
         print("----------------------------------------------------")
         res = tf2_geometry_msgs.do_transform_pose(pose, transform)
+        print(type(res))
+
         return res.pose.position
 
     def secure_position(self, position):
