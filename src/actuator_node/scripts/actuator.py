@@ -15,8 +15,8 @@ class Actuator:
         rospy.loginfo("Initializing actuator")
         #self.quat_vertical = tf.transformations.quaternion_from_euler(180*3.1415/180, 0*3.1415/180, 0*3.1415/180, 'rxyz')
         self.prefix = prefix
-        self.tfBuffer = tf2_ros.Buffer()
-        self.listener = tf2_ros.TransformListener(self.tfBuffer, queue_size=1)
+        #self.tfBuffer = tf2_ros.Buffer()
+        #self.listener = tf2_ros.TransformListener(self.tfBuffer, queue_size=1)
         self.init_position()
 
 
@@ -112,18 +112,21 @@ class Actuator:
                 obs_4 = obs
                 
         self.pick_up(obs_4)
-            
+
     def pick_up(self, observation):
 
         print("ID: {}".format(observation.id))
         
-        transformed_pose = self.transform(observation.pose, observation.id)
+        #transformed_pose = self.transform(observation.pose, observation.id)
         
-        rospy.loginfo("Ready to pick up item at position\n{}".format(transformed_pose))
+        rospy.loginfo("Ready to pick up item at position\n{}".format(observation.pose))
 
         #secured_position = self.secure_position(transformed_pose)
 
-	secured_position = (transformed_pose.x, transformed_pose.y, transformed_pose.z)
+	#secured_position = (transformed_pose.x, transformed_pose.y, transformed_pose.z)
+
+        secured_position = (observation.pose.pose.position.x, observation.pose.pose.position.y, 
+                observation.pose.pose.position.z + 0.12)
 
         self.go_to_aligned(secured_position)
 
@@ -131,11 +134,11 @@ class Actuator:
 
 
     def transform(self, pose, obs_id):
+        """
         print("------------------!!!TRANSFORM!!!:---------------")
 
        #This transform represents the transformation from origin (ar_marker_1) to the base of the robot
-        transform = self.tfBuffer.lookup_transform(
-                "{}link_base".format(self.prefix), pose.header.frame_id, rospy.Time(0))
+        transform = self.tfBuffer.lookup_transform("{}link_base".format(self.prefix), pose.header.frame_id, rospy.Time(0))
 
         #This transform calculates the transformation from the base of the robot arm to the reference ar_marker
 
@@ -146,6 +149,8 @@ class Actuator:
         print(type(res))
 
         return res.pose.position
+        """
+        pass
 
     def secure_position(self, position):
         """
@@ -169,6 +174,8 @@ class Actuator:
 
         print("POSITION: x:{}, y={}, z:{}".format(translation.x, translation.y, translation.z))
         print("ORIENTATION: qx:{}, qy:{}, qz:{}, gw:{}".format(rotation.x, rotation.y, rotation.z, rotation.w))
+
+
     
 
 def actuator_main():
