@@ -5,6 +5,9 @@ import tf2_ros
 import tf2_geometry_msgs
 import tf
 
+import actionlib
+import kinova_msgs.msg
+
 from observer_node.msg import Observation, Observations
 from math import pi, cos, sin
 from robot_control_modules import *
@@ -38,7 +41,11 @@ class Actuator:
         #position = (0.2108822746158, -0.25810956955, 0.509347975254)
         #quat_orientation = (0.644038379192, 0.319248020649, 0.420018672943, 0.553967058659)
         #cartesian_pose_client(position, quat_orientation, self.prefix)
-        self.go_to_aligned((0.0, -.3, 0.4))
+
+        #self.go_to_aligned((0.0, -.3, 0.4))
+        
+        angles = joint_position_client([275.238983154, 231, 153, 314, 126, 137, 0], self.prefix)
+        print(angles)
 
 
     def go_to_aligned(self, position):
@@ -48,7 +55,7 @@ class Actuator:
 	--> the positive y-axis is directed towards the user when standing behind the robot (i.e facing the base plate) this mean that negative y-values will make the robot gripper move forward.
 	--> the positive z-axis is directed when facing the base plate
 	"""
-        p, q = self.generate_gripper_align_pose(position, 0.0, math.pi/2.0, 0.0, 0.0)
+        p, q = self.generate_gripper_align_pose(position, 0.0, math.pi, 0.0, 0.0)
 
 	#p, q = self.generate_gripper_align_pose(position, 0.03, math.pi/2.0, 0.0, 0.0)
 
@@ -125,12 +132,37 @@ class Actuator:
 
 	#secured_position = (transformed_pose.x, transformed_pose.y, transformed_pose.z)
 
-        secured_position = (observation.pose.pose.position.x, observation.pose.pose.position.y, 
-                observation.pose.pose.position.z + 0.12)
+        #secured_position = (observation.pose.pose.position.x, observation.pose.pose.position.y, 
+         #       observation.pose.pose.position.z + 0.05)
 
-        self.go_to_aligned(secured_position)
-
+        #self.go_to_aligned(secured_position)
+        
        # homeRobot(self.prefix)
+
+        position = observation.pose.pose.position
+        orientation = observation.pose.pose.orientation
+        position_tuple = (position.x, position.y, position.z)
+        orientation_tuple = (orientation.x, orientation.y, orientation.z, orientation.w)
+
+        action_address = '/' + self.prefix + 'driver/pose_action/tool_pose'
+        client = actionlib.SimpleActionClient(action_address, kinova_msgs.msg.ArmPoseAction)
+        client.wait_for_server()
+
+        goal = kinova_msgs.msg.ArmPoseGoal()
+        goal.pose.header = std_msgs.msg.Header(frame_id=(self.prefix+'link_base'))
+        goal.pose.pose.position = geometry_msgs.msg.Point(x=position_tuple[0], y=position_tuple[1], 
+                z=position_tuple[2])
+        goal.pose.pose.orientation = geometry_msgs.msg.Quaternion(
+                x=orientation_tuple[0], y=orientation_tuple[1], z=orientation_tuple[2], w=orientation_tuple[3])
+
+        client.send_goal(goal)
+
+        if client.wait_for_result(rospy.Duration(10.0)):
+            return client.get_result()
+        else:
+            client.cancel_all_goals()
+            print('         the cartesian action timed-out')
+            return None
 
 
     def transform(self, pose, obs_id):

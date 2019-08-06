@@ -9,6 +9,8 @@ project(actuator_node)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  kinova_msgs
+  kinova_driver
   std_msgs
   tf2
   tf2_ros
