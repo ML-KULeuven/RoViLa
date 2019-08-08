@@ -7,9 +7,9 @@ import tf
 
 import actionlib
 import kinova_msgs.msg
+import math
 
 from observer_node.msg import Observation, Observations
-from math import pi, cos, sin
 from robot_control_modules import *
 
 class Actuator:
@@ -21,6 +21,9 @@ class Actuator:
         #self.tfBuffer = tf2_ros.Buffer()
         #self.listener = tf2_ros.TransformListener(self.tfBuffer, queue_size=1)
         self.init_position()
+
+        self.current_cartesian_command = [0.212322831154, -0.257197618484, 0.509646713734, 1.63771402836, 1.11316478252, 0.134094119072] # default home position in mq format (meters - quaternion)
+
 
 
     def init_position(self):
@@ -42,10 +45,10 @@ class Actuator:
         #quat_orientation = (0.644038379192, 0.319248020649, 0.420018672943, 0.553967058659)
         #cartesian_pose_client(position, quat_orientation, self.prefix)
 
-        #self.go_to_aligned((0.0, -.3, 0.4))
+        self.go_to_aligned((0.0, -.3, 0.4))
         
-        angles = joint_position_client([275.238983154, 231, 153, 314, 126, 137, 0], self.prefix)
-        print(angles)
+        #angles = joint_position_client([275.238983154, 231, 153, 314, 126, 137, 0], self.prefix)
+        #print(angles)
 
 
     def go_to_aligned(self, position):
@@ -55,7 +58,7 @@ class Actuator:
 	--> the positive y-axis is directed towards the user when standing behind the robot (i.e facing the base plate) this mean that negative y-values will make the robot gripper move forward.
 	--> the positive z-axis is directed when facing the base plate
 	"""
-        p, q = self.generate_gripper_align_pose(position, 0.0, math.pi, 0.0, 0.0)
+        p, q = self.generate_gripper_align_pose(position, 0.0, math.pi/2.0, 0.0, 0.0)
 
 	#p, q = self.generate_gripper_align_pose(position, 0.03, math.pi/2.0, 0.0, 0.0)
 
@@ -77,9 +80,9 @@ class Actuator:
 	a tuple ((px, py, pz), q) where (px, py, pz) is the target position and q is the target quaternion for the robotarm.
    	"""
 	
-        delta_x = -dist * cos(azimuth) * sin(polar)
-        delta_y = -dist * sin(azimuth) * sin(polar)
-        delta_z = -dist * cos(polar)
+        delta_x = -dist * math.cos(azimuth) * math.sin(polar)
+        delta_y = -dist * math.sin(azimuth) * math.sin(polar)
+        delta_z = -dist * math.cos(polar)
 
         q = tf.transformations.quaternion_from_euler(
             azimuth, polar, rot_gripper_z, 'rxyz')
@@ -124,36 +127,34 @@ class Actuator:
 
         print("ID: {}".format(observation.id))
         
-        #transformed_pose = self.transform(observation.pose, observation.id)
-        
         rospy.loginfo("Ready to pick up item at position\n{}".format(observation.pose))
-
-        #secured_position = self.secure_position(transformed_pose)
-
-	#secured_position = (transformed_pose.x, transformed_pose.y, transformed_pose.z)
-
-        #secured_position = (observation.pose.pose.position.x, observation.pose.pose.position.y, 
-         #       observation.pose.pose.position.z + 0.05)
-
-        #self.go_to_aligned(secured_position)
-        
-       # homeRobot(self.prefix)
 
         position = observation.pose.pose.position
         orientation = observation.pose.pose.orientation
         position_tuple = (position.x, position.y, position.z)
         orientation_tuple = (orientation.x, orientation.y, orientation.z, orientation.w)
 
+        result = self.push_relative_cartesian_pose(list(position_tuple), list(orientation_tuple))
+       
+        """
+        relative_pose = self.generate_relative_pose(position_tuple, orientation_tuple)
+        print("The relative pose of the object given the position of the robot is \n{}".format(relative_pose))
+        poses = [float(n) for n in relative_pose]
+        result = self.push_relative_cartesian_pose(poses[:3], poses[3:])
+        print(result)
+        """
+
+    def push_relative_cartesian_pose(self, position_list, orientation_list):
         action_address = '/' + self.prefix + 'driver/pose_action/tool_pose'
         client = actionlib.SimpleActionClient(action_address, kinova_msgs.msg.ArmPoseAction)
         client.wait_for_server()
 
         goal = kinova_msgs.msg.ArmPoseGoal()
         goal.pose.header = std_msgs.msg.Header(frame_id=(self.prefix+'link_base'))
-        goal.pose.pose.position = geometry_msgs.msg.Point(x=position_tuple[0], y=position_tuple[1], 
-                z=position_tuple[2])
+        goal.pose.pose.position = geometry_msgs.msg.Point(x=position_list[0], y=position_list[1], 
+                z=position_list[2] + 0.10)
         goal.pose.pose.orientation = geometry_msgs.msg.Quaternion(
-                x=orientation_tuple[0], y=orientation_tuple[1], z=orientation_tuple[2], w=orientation_tuple[3])
+                x=orientation_list[0], y=orientation_list[1], z=orientation_list[2], w=orientation_list[3])
 
         client.send_goal(goal)
 
@@ -164,6 +165,81 @@ class Actuator:
             print('         the cartesian action timed-out')
             return None
 
+
+    def generate_relative_pose(self, position_tuple, orientation_tuple):
+        self.get_current_cartesian_command()
+        
+        position_list = list(position_tuple)
+        relative_position_list = position_list
+
+        for i in range(0,3):
+            relative_position_list[i] = position_list[i] + self.current_cartesian_command[i]
+
+        orientation_XYZ = self.quaternion_2_euler_xyz(orientation_tuple)
+        orientation_XYZ_list = [orientation_XYZ[i] + self.current_cartesian_command[3+i] for i in range(0,3)]
+        relative_orientation_list = self.euler_xyz_2_quaternion(orientation_XYZ_list)
+        
+        return relative_position_list + relative_orientation_list
+
+
+    def quaternion_2_euler_xyz(self, quaternion_tuple):
+        qx, qy, qz, qw = self.quaternion_norm(quaternion_tuple)[0:4]
+
+        euler_x = math.atan2((2 * qw * qx - 2 * qy * qz), (qw * qw - qx * qx - qy * qy + qz * qz))
+        euler_y = math.asin(2 * qw * qy + 2 * qx * qz)
+        euler_z = math.atan2((2 * qw * qz - 2 * qx * qy), (qw * qw + qx * qx - qy * qy - qz * qz))
+
+        return [euler_x, euler_y, euler_z]
+
+
+    def quaternion_norm(self, quaternion_tuple):
+        qx_temp, qy_temp, qz_temp, qw_temp = quaternion_tuple[0:4]
+        qnorm = math.sqrt(qx_temp*qx_temp + qy_temp*qy_temp + qz_temp*qz_temp + qw_temp*qw_temp)
+        qx = qx_temp/qnorm
+        qy = qy_temp/qnorm
+        qz = qz_temp/qnorm       
+        qw = qw_temp/qnorm
+
+        return [qx, qy, qz, qw] # the normed quaternion
+
+    def euler_xyz_2_quaternion(self, euler_xyz_list):
+        euler_x, euler_y, euler_z = euler_xyz_list[0:3]
+
+        sx = math.sin(0.5 * euler_x)
+        cx = math.cos(0.5 * euler_x)
+        sy = math.sin(0.5 * euler_y)
+        cy = math.cos(0.5 * euler_y)
+        sz = math.sin(0.5 * euler_z)
+        cz = math.cos(0.5 * euler_z)
+
+        qx = sx * cy * cz + cx * sy * sz
+        qy = -sx * cy * sz + cx * sy * cz
+        qz = sx * sy * cz + cx * cy * sz
+        qw = -sx * sy * sz + cx * cy * cz
+
+        return [qx, qy, qz, qw]
+
+    def get_current_cartesian_command(self):
+        topic_address = '/' + self.prefix + 'driver/out/cartesian_command'
+        rospy.Subscriber(topic_address, kinova_msgs.msg.KinovaPose, self.set_current_cartesian_command)
+        rospy.wait_for_message(topic_address, kinova_msgs.msg.KinovaPose)
+        print("Cartesian command listener obtained message for current cartesian pose")
+
+    def set_current_cartesian_command(self, msg):
+        """
+        The format of the messags on topic /m1n6s200_driver/out/cartesian_command is:
+            X: float64
+            Y: float64
+            Z: float64
+            ThetaX: float64
+            ThetaY: float64
+            ThetaZ: float64
+        """
+        current_cartesian_command_str_list = str(msg).split("\n")
+
+        for index in range(0, len(current_cartesian_command_str_list)):
+            temp_str = current_cartesian_command_str_list[index].split(": ")
+            self.current_cartesian_command[index] = float(temp_str[1])
 
     def transform(self, pose, obs_id):
         """
