@@ -2,6 +2,7 @@
 
 import sys
 import rospy
+import copy
 import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
@@ -9,10 +10,12 @@ import geometry_msgs.msg
 from math import pi
 from std_msgs.msg import String
 from moveit_commander.conversions import pose_to_list
+from observer_node.msg import Observation, Observations
 
 class MoveGroupPythonInterfaceTutorial:
 
     def __init__(self):
+        #joint_state_topic = ['joint_states:=/m1n6s200_driver/out/joint_state']
         moveit_commander.roscpp_initialize(sys.argv)
         rospy.init_node('move_group_python_interface_tutorial', anonymous=True)
 
@@ -37,6 +40,14 @@ class MoveGroupPythonInterfaceTutorial:
         print("=================== Printing robot state")
         print(self.robot.get_current_state())
         print("")
+
+
+        print("=================== End effector link for arm group")
+        self.end_effector = self.arm_group.get_end_effector_link()
+        print(self.end_effector)
+
+        print("=================== Current pose of the end effector for the arm group")
+        print(self.arm_group.get_current_pose(self.end_effector))
 
     def go_to_pose_goal(self):
 
@@ -65,17 +76,66 @@ class MoveGroupPythonInterfaceTutorial:
 
         #self.execute_plan(plan)
 
+    def go_to_cartesian(self, desired_pose):
+        
+        waypoints=[]
+
+        current_pose = self.arm_group.get_current_pose().pose
+        current_pose.position.x += desired_pose.position.x 
+        current_pose.position.y += desired_pose.position.y
+        current_pose.position.z += desired_pose.position.z
+        waypoints.append(copy.deepcopy(current_pose))
+    
+        #current_pose.position.z += desired_pose.position.z   
+        #waypoints.append(copy.deepcopy(current_pose))
+
+        (plan, fraction) = self.arm_group.compute_cartesian_path(
+                waypoints,
+                0.01,
+                0.0)
+        
+        return plan, fraction
+    
+
     def execute_plan(self, plan):
         try:
             self.arm_group.execute(plan, wait=True)
         except rospy.ROSInterruptException:
             return
 
+    def callback(self, msg):
+
+        obs_4 = None
+
+        for obs in msg.observations:
+            print("--------")
+            print("ar_marker_{}".format(obs.id))
+            point = obs.pose.pose.position
+            orientation = obs.pose.pose.orientation
+            print("The position of the marker is x:{} y:{} z:{}".format(point.x, point.y, point.z))
+            print("The orientation of the marker is qx:{} qy:{} qz:{} qw:{}".format(orientation.x, orientation.y, orientation.z, orientation.w))
+            if int(obs.id) == 4:
+                obs_4 = obs
+
+        plan, fraction = self.go_to_cartesian(obs.pose.pose)
+
+        print("PLAN")
+        print(plan)
+        print("==========================")
+        print("FRACTION")
+        print(fraction)
+        print("==========================")
+        print("Ready to execute plan")
+        self.execute_plan(plan)
+
+        return plan, fraction
+                
 def main():
     move_group = MoveGroupPythonInterfaceTutorial()
 
-    move_group.go_to_pose_goal()
+    msg = rospy.wait_for_message('observer_node', Observations)
 
+    move_group.callback(msg)
 
 if __name__ == '__main__':
     main()

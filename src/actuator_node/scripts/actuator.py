@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
+import sys
 import rospy
+import copy
+import moveit_commander
+import moveit_msgs
+import geometry_msgs
 import tf2_ros
 import tf2_geometry_msgs
 import tf
@@ -9,12 +14,31 @@ import actionlib
 import kinova_msgs.msg
 import math
 
+from moveit_commander.conversions import pose_to_list
 from observer_node.msg import Observation, Observations
 from robot_control_modules import *
+from std_msgs.msg import String
+
+BLUE_ID = 4
+RED_ID = 6
+YELLOW_ID = 7
 
 class Actuator:
 
     def __init__(self, prefix, *args, **kwargs):
+        moveit_commander.roscpp_initialize(sys.argv)
+
+        self.robot = moveit_commander.RobotCommander() # This is the outer level interface to the robot
+        self.scene = moveit_commander.PlanningSceneInterface() # This is an interface to the worl surrouding the robot
+
+        # MoveGroupCommander is an interface to a group of joints beloning to the robot as defined with the moveit setup assistent
+        self.arm_group = moveit_commander.MoveGroupCommander("arm")
+        self.gripper_group = moveit_commander.MoveGroupCommander("gripper")
+    
+        #The DisplayTrajectory publisher can be used to visualize planned trajectories in rviz!!
+        self.display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
+                moveit_msgs.msg.DisplayTrajectory, queue_size=20)
+
         rospy.loginfo("Initializing actuator")
         #self.quat_vertical = tf.transformations.quaternion_from_euler(180*3.1415/180, 0*3.1415/180, 0*3.1415/180, 'rxyz')
         self.prefix = prefix
@@ -24,6 +48,24 @@ class Actuator:
 
         self.current_cartesian_command = [0.212322831154, -0.257197618484, 0.509646713734, 1.63771402836, 1.11316478252, 0.134094119072] # default home position in mq format (meters - quaternion)
 
+        #Getting some basic information:
+        self.planning_frame_arm = self.arm_group.get_planning_frame()
+        print("=================== Reference frame for arm group: %s"%self.planning_frame_arm)
+
+        self.planning_frame_gripper = self.gripper_group.get_planning_frame()
+        print("=================== Reference frame for the gripper group: %s"%self.planning_frame_gripper)
+
+        print("=================== Printing robot state")
+        print(self.robot.get_current_state())
+        print("")
+
+
+        print("=================== End effector link for arm group")
+        self.end_effector = self.arm_group.get_end_effector_link()
+        print(self.end_effector)
+
+        print("=================== Current pose of the end effector for the arm group")
+        print(self.arm_group.get_current_pose(self.end_effector))
 
 
     def init_position(self):
@@ -45,11 +87,31 @@ class Actuator:
         #quat_orientation = (0.644038379192, 0.319248020649, 0.420018672943, 0.553967058659)
         #cartesian_pose_client(position, quat_orientation, self.prefix)
 
-        self.go_to_aligned((0.0, -.3, 0.4))
+        #self.go_to_aligned((0.0, -.3, 0.4))
         
-        #angles = joint_position_client([275.238983154, 231, 153, 314, 126, 137, 0], self.prefix)
-        #print(angles)
+        angles = [275.238983154, 231, 153, 314, 126, 137]
+        print(angles)
+        plan = self.go_to_joint_goal(list(map(lambda x : math.radians(x), angles)))
+        print("PLAN")
+        print(plan)
 
+        self.execute_plan(plan)
+
+
+    def test_marker(self):
+        pose_goal = geometry_msgs.msg.Pose()
+        pose_goal.position.x = 0.2721
+        pose_goal.position.y = -0.4239
+        pose_goal.position.z = 0.02
+    
+        #self.arm_group.set_pose_target(pose_goal)
+        #plan = self.arm_group.plan(pose_goal)
+
+        plan, fraction = self.go_to_cartesian(pose_goal)
+
+        print("PLAN")
+        print(plan)
+        self.execute_plan(plan)
 
     def go_to_aligned(self, position):
 	"""
@@ -107,9 +169,61 @@ class Actuator:
         rospy.loginfo('Closing gripper')
         return gripper_client([6400, 6400, 0], self.prefix)
 
+    def callback_main_node(self, msg):
+        print(msg.data)
+
+        action = msg.data.split("(", 1)
+
+        action_1 = action[0]
+        action_2 = action[1].split("(", 1)
+    
+        blocks = action_2[1].split(",")
+        
+        print("The blocks in this operations are: ")
+        print(blocks)
+
+        operator_1_id = self.get_block_id(blocks[0].split("(",1)[0].strip())
+        operator_2_id = self.get_block_id(blocks[1].split("(",1)[0].strip())
+
+        print("Waiting for an observation from the kinect camera")
+        observations_msg = rospy.wait_for_message('observer_node', Observations)
+        
+        print(observations_msg)
+
+        block_1 = None
+        block_2 = None
+
+        for observation in observations_msg.observations:
+            if observation.id == operator_1_id:
+                block_1 = observation
+            if observation.id == operator_2_id:
+                block_2 = observation
+
+        print("BLOCK 1")
+        print(block_1)
+
+        print("BLOCK 2")
+        print(block_2)
+
+        print("Ready to start pick-up operation")
+        self.pick_up(block_1)
+
+        print("Ready to put down the block")
+        self.put_down(block_2)
+    
+    def get_block_id(self, block):
+
+        if block.lower() == "blue":
+            return BLUE_ID
+        elif block.lower() == "red":
+            return RED_ID
+        elif block.lower() == "yellow":
+            return YELLOW_ID
+
     def callback(self, msg):
 
         obs_4 = None
+        obs_6 = None
 
         for obs in msg.observations:
             print("--------")
@@ -120,30 +234,158 @@ class Actuator:
             print("The orientation of the marker is qx:{} qy:{} qz:{} qw:{}".format(orientation.x, orientation.y, orientation.z, orientation.w))
             if int(obs.id) == 4:
                 obs_4 = obs
-                
+            if int(obs.id) == 6:
+                obs_6 = obs
+
+
         self.pick_up(obs_4)
+        self.put_down(obs_6)        
 
     def pick_up(self, observation):
 
-        print("ID: {}".format(observation.id))
+
+        pre_pickup_pose = self.generate_pre_pickup_pose(observation.pose.pose)
         
-        rospy.loginfo("Ready to pick up item at position\n{}".format(observation.pose))
+        print("GOING TO SAFE POSE FOR PICKUP")
+        plan_pre_pickup, fraction = self.go_to_cartesian(pre_pickup_pose)
+        print("PLAN")
+        print(plan_pre_pickup)
+        print("==========================")
+        print("FRACTION")
+        print(fraction)
+        print("==========================")
+        print("Ready to execute plan")
+        self.execute_plan(plan_pre_pickup)
 
-        position = observation.pose.pose.position
-        orientation = observation.pose.pose.orientation
-        position_tuple = (position.x, position.y, position.z)
-        orientation_tuple = (orientation.x, orientation.y, orientation.z, orientation.w)
+        print("GOING TO PICKUP POSE")
+        pickup_pose = self.generate_pickup_pose(pre_pickup_pose)
+        plan_pickup, fraction = self.go_to_cartesian(pickup_pose)
+        self.execute_plan(plan_pickup)
 
-        result = self.push_relative_cartesian_pose(list(position_tuple), list(orientation_tuple))
-       
-        """
-        relative_pose = self.generate_relative_pose(position_tuple, orientation_tuple)
-        print("The relative pose of the object given the position of the robot is \n{}".format(relative_pose))
-        poses = [float(n) for n in relative_pose]
-        result = self.push_relative_cartesian_pose(poses[:3], poses[3:])
-        print(result)
-        """
+        print("GRABBING OBJECT")
+        gripper_client([3000.0, 3000.0, 0], self.prefix)
 
+        print("BRINGING OBJECT HOME")
+        self.go_home()
+
+    def generate_pre_pickup_pose(self, unsafe_pose):
+
+        safe_pose = geometry_msgs.msg.Pose()
+        safe_pose.position.x = unsafe_pose.position.x
+        safe_pose.position.y = unsafe_pose.position.y + 0.03
+        safe_pose.position.z = unsafe_pose.position.z + 0.10
+
+        return safe_pose
+
+    def generate_pickup_pose(self, pre_pickup_pose):
+        
+        pickup_pose = geometry_msgs.msg.Pose()
+        pickup_pose.position.x = pre_pickup_pose.position.x
+        pickup_pose.position.y = pre_pickup_pose.position.y
+        pickup_pose.position.z = pre_pickup_pose.position.z - 0.10
+
+        return pickup_pose
+    
+    def put_down(self, observation):
+        
+        pre_drop_pose = self.generate_pre_drop_pose(observation.pose.pose)
+
+        print("GOING TO SAFE POSE FOR DROP")
+        plan_pre_drop, fraction = self.go_to_cartesian(pre_drop_pose)
+        print("PLAN")
+        print(plan_pre_drop)
+        print("==========================")
+        print("FRACTION")
+        print(fraction)
+        print("==========================")
+        print("Ready to execute plan")
+        self.execute_plan(plan_pre_drop)
+
+        print("GOING TO DROP POSE")
+        drop_pose = self.generate_drop_pose(pre_drop_pose)
+        plan_drop, fraction = self.go_to_cartesian(drop_pose)
+        self.execute_plan(plan_drop)
+
+        print("DROPPING OBJECT")
+        self.open_gripper()
+
+        print("GOING TO SAFE POSE TO CONTINUE POST DROP")
+        post_drop_pose = self.generate_post_drop_pose(drop_pose)
+        plan_post_drop, _ = self.go_to_cartesian(post_drop_pose)
+        self.execute_plan(plan_post_drop)
+
+        print("GOING HOME")
+        self.go_home()
+
+    def generate_pre_drop_pose(self, unsafe_pose):
+        
+        safe_pose = geometry_msgs.msg.Pose()
+        safe_pose.position.x = unsafe_pose.position.x
+        safe_pose.position.y = unsafe_pose.position.y + 0.03
+        safe_pose.position.z = unsafe_pose.position.z + 0.10
+
+        return safe_pose
+
+    def generate_drop_pose(self, pre_drop_pose):
+        
+        drop_pose = geometry_msgs.msg.Pose()
+        drop_pose.position.x = pre_drop_pose.position.x
+        drop_pose.position.y = pre_drop_pose.position.y
+        drop_pose.position.z = pre_drop_pose.position.z - 0.03
+
+        return drop_pose
+
+    def generate_post_drop_pose(self, drop_pose):
+        
+        post_drop_pose = geometry_msgs.msg.Pose()
+        post_drop_pose.position.x = drop_pose.position.x
+        post_drop_pose.position.y = drop_pose.position.y
+        post_drop_pose.position.z = drop_pose.position.z + 0.20
+
+        return post_drop_pose
+
+    def go_to_cartesian(self, desired_pose):
+        
+        waypoints=[]
+
+        safe_position = self.arm_group.get_current_pose().pose
+        safe_position.position.x = desired_pose.position.x
+        safe_position.position.y = desired_pose.position.y
+        safe_position.position.z = desired_pose.position.z
+        waypoints.append(copy.deepcopy(safe_position))
+
+        safe_position.position.z = desired_pose.position.z   
+        waypoints.append(copy.deepcopy(safe_position))
+
+        (plan, fraction) = self.arm_group.compute_cartesian_path(
+                waypoints,
+                0.01,
+                0.0)
+        
+        return plan, fraction
+
+    def go_to_joint_goal(self, joint_configuration):
+        joint_goal = self.arm_group.get_current_joint_values()
+        
+        print(joint_goal)
+
+        joint_goal[0] = joint_configuration[0]
+        joint_goal[1] = joint_configuration[1]
+        joint_goal[2] = joint_configuration[2]
+        joint_goal[3] = joint_configuration[3]
+        joint_goal[4] = joint_configuration[4]
+        joint_goal[5] = joint_configuration[5]
+
+        plan = self.arm_group.plan(joint_goal)
+
+        return plan
+
+    def execute_plan(self, plan):
+        try:
+            self.arm_group.execute(plan, wait=True)
+        except rospy.ROSInterruptException:
+            return
+    
     def push_relative_cartesian_pose(self, position_list, orientation_list):
         action_address = '/' + self.prefix + 'driver/pose_action/tool_pose'
         client = actionlib.SimpleActionClient(action_address, kinova_msgs.msg.ArmPoseAction)
@@ -241,41 +483,7 @@ class Actuator:
             temp_str = current_cartesian_command_str_list[index].split(": ")
             self.current_cartesian_command[index] = float(temp_str[1])
 
-    def transform(self, pose, obs_id):
-        """
-        print("------------------!!!TRANSFORM!!!:---------------")
-
-       #This transform represents the transformation from origin (ar_marker_1) to the base of the robot
-        transform = self.tfBuffer.lookup_transform("{}link_base".format(self.prefix), pose.header.frame_id, rospy.Time(0))
-
-        #This transform calculates the transformation from the base of the robot arm to the reference ar_marker
-
-        print(type(transform))
-        self.print_transform_stamped_pose(transform)
-        print("----------------------------------------------------")
-        res = tf2_geometry_msgs.do_transform_pose(pose, transform)
-        print(type(res))
-
-        return res.pose.position
-        """
-        pass
-
-    def secure_position(self, position):
-        """
-        Converts the given position to a safe position.
-        This takes into account the boundaries in the real world to avoid collisions with table, wall, ...
-        Returns:
-        a tuple (x, y, z) with the safe coordinates
-        """
-        x = max(min(position.x, 0.50), -.50) - 0.02
-        if x < -0.10:
-            x = -0.14
-        if x > 0.08:
-            x -= 0.01
-        y = min(max(position.y, -1), 0.0) + 0.07
-        z = max(min(position.z, 0.33), 0.02) + 0.05
-        return (x, y, z)
-
+    
     def print_transform_stamped_pose(self, transform_stamped):
         translation = transform_stamped.transform.translation
         rotation = transform_stamped.transform.rotation
@@ -294,8 +502,9 @@ def actuator_main():
 
     #rospy.Subscriber("observer_node", Observations, act.callback, queue_size=1)
    # rospy.Service('actuator_service' Action, act.handle_action)
-    msg = rospy.wait_for_message('observer_node', Observations)
-    act.callback(msg)
+
+    msg = rospy.wait_for_message('central_to_actuator', String)
+    act.callback_main_node(msg)
     rospy.loginfo("Ready to spin")
     rospy.spin()
 

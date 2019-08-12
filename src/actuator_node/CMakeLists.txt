@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   geometry_msgs
   observer_node
+  moveit_msgs
 )
 
 ## System dependencies are found with CMake's conventions

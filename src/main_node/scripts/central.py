@@ -10,7 +10,7 @@ from parser_node.srv import *
 
 def record_speech_client():
    
-    print("Initializing main node...")
+    rospy.loginfo("Initializing main node...")
     rospy.init_node('centralnode',anonymous=True)
 
     chunk_size = 1024
@@ -19,19 +19,22 @@ def record_speech_client():
     frequency = 44100
     seconds = 3
 
-    print("Waiting for SpeechStream service to come online")
+    publisher = rospy.Publisher('central_to_actuator', String, queue_size=10)
+
+    rospy.loginfo("Waiting for SpeechStream service to come online")
     rospy.wait_for_service('speech_service')
 
     try:
         record_speech = rospy.ServiceProxy('speech_service', SpeechStream)
         response_speech_service = record_speech(chunk_size,sample_format,channels,frequency,seconds)
         frames = response_speech_service.stream
-        print("Received the frames, ready to construct WAV file")
+        rospy.loginfo("Received the frames, ready to construct WAV file")
 
     except rospy.ServiceException, e:
-        print("Service call to the speech_service failed: %s"%e)
-
-    print("Waiting for AudioToText service to come online")
+        rospy.loginfo("Service call to the speech_service failed: %s"%e)
+    
+    rospy.loginfo("Waiting for AudioToText service to come online")
+    
     rospy.wait_for_service('recognizer_service')
 
     try: 
@@ -57,6 +60,9 @@ def record_speech_client():
 
     except rospy.ServiceException, e:
         print("Service call to the parser_service failed: %s"%e)
+
+    publisher.publish(parsed)
+
 
     
 

@@ -4,9 +4,11 @@ import rospy
 import pyaudio as pa
 import wave
 import speech_recognition as sr
+import os
 from std_msgs.msg import String
 from recognizer_node.srv import *
 from os.path import expanduser
+from pocketsphinx import Pocketsphinx, get_model_path, get_data_path
 
 def construct_wav_file(request):
 
@@ -26,19 +28,34 @@ def construct_wav_file(request):
 
 def transform_audio_to_text(filename):
 
-    r = sr.Recognizer()
+    user = expanduser("~")
+    path = user + "/DTAI_Internship/src/recognizer_node/scripts/data/"
 
-    audiofile = sr.AudioFile(filename)
+    lm_file = path + "8997.lm"
+    dict_file = path + "8997.dic"
 
-    with audiofile as source:
-        audio = r.record(source)
-    
-    try:
-        print("recognizing audio...")
-        text = r.recognize_sphinx(audio)
-        print(text)
-    except sr.UnknownValueError:
-        print("Unknown Value")
+    hmm_file = user + "/.local/lib/python2.7/site-packages/pocketsphinx/model/en-us"
+
+    model_path = get_model_path()
+    data_path = get_data_path()
+
+    config = {
+            'hmm': os.path.join(model_path, 'en-us'),
+            'lm': os.path.join(model_path, lm_file),
+            'dict': os.path.join(model_path, dict_file)
+    }
+
+    ps = Pocketsphinx(**config)
+    ps.decode(
+            audio_file=os.path.join(data_path, '/home/dtai-robotarm/DTAI_Internship/src/recognizer_node/scripts/audio/audio_in.wav'),
+            buffer_size=2048,
+            no_search=False,
+            full_utt=False
+    )
+
+    text = ps.hypothesis()
+
+    print(text)
 
     return text
 
@@ -48,12 +65,12 @@ def handle_recognize_speech(request):
     audiofilename = construct_wav_file(request)
     print("WAV file constructed")
 
-    #text = transform_audio_to_text(audiofilename)
     user = expanduser("~")
     path = user + "/DTAI_Internship/src/recognizer_node/scripts/audio/audio.wav"
 
-    text = transform_audio_to_text(path)
-
+    #text = transform_audio_to_text(path)
+    text = transform_audio_to_text(audiofilename)
+    
     return AudioToTextResponse(text)
 
 def recognize_speech_server():
