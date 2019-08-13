@@ -4,8 +4,9 @@ This repository contains ROS packages that are needed to operate the Mico robot 
 
 This README contains an overview of the recommended skills paired with useful tutorials/wiki-pages/github repo's that can prove useful to read before working with the nodes in this repository. Subsequently an overview of the implemented system is given and the functionalities of this system are discussed. 
 
-Before doing any further work on this project, it is recommended to have a look at the [Recommended Skills](##Recommended Skills) section. It is also advisable that any further work done on this repository is implemented and tested on the desktop that already contains this project instead of reinstalling the project on another computer. However, to facilitate reinstalation, a seperate markdown file is included that addresses the different components that have to be installed in case a [full (re)install](INSTALL.md) is needed.
+Before doing any further work on this project, it is recommended to have a look at the [Recommended Skills](#recommended-skills) section. It is also advisable that any further work done on this repository is implemented and tested on the desktop that already contains this project instead of reinstalling the project on another computer. However, to facilitate reinstalation, a seperate markdown file is included that addresses the different components that have to be installed in case a [full (re)install](INSTALL.md) is needed.
 
+## Recommended Skills
 
 ## Overview
 <p align="center">
@@ -65,6 +66,6 @@ Executing catkin_make in the root of this workspace will build the project
 * **Pieter-Jan Coenen** - *The text to logic form parser*
 
 ## License
-##Recommended Skills
+
 ## Acknowledgments
 
