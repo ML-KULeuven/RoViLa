@@ -13,7 +13,7 @@ from pocketsphinx import Pocketsphinx, get_model_path, get_data_path
 def construct_wav_file(request):
 
     user = expanduser("~")
-    path = user + "/DTAI_Internship/src/recognizer_node/scripts/audio/audio_in.wav"	
+    path = user + "/DTAI_Internship/src/recognizer_node/audio/audio_in.wav"	
 
     p = pa.PyAudio()
 
@@ -29,10 +29,10 @@ def construct_wav_file(request):
 def transform_audio_to_text(filename):
 
     user = expanduser("~")
-    path = user + "/DTAI_Internship/src/recognizer_node/scripts/data/"
+    path = user + "/DTAI_Internship/src/recognizer_node/data/"
 
-    lm_file = path + "8997.lm"
-    dict_file = path + "8997.dic"
+    lm_file = path + "generated_language_model.lm"
+    dict_file = path + "generated_dictionary.dic"
 
     hmm_file = user + "/.local/lib/python2.7/site-packages/pocketsphinx/model/en-us"
 
@@ -47,7 +47,7 @@ def transform_audio_to_text(filename):
 
     ps = Pocketsphinx(**config)
     ps.decode(
-            audio_file=os.path.join(data_path, '/home/dtai-robotarm/DTAI_Internship/src/recognizer_node/scripts/audio/audio_in.wav'),
+            audio_file=os.path.join(data_path, filename),
             buffer_size=2048,
             no_search=False,
             full_utt=False
@@ -66,7 +66,7 @@ def handle_recognize_speech(request):
     print("WAV file constructed")
 
     user = expanduser("~")
-    path = user + "/DTAI_Internship/src/recognizer_node/scripts/audio/audio.wav"
+    path = user + "/DTAI_Internship/src/recognizer_node/audio/audio.wav"
 
     #text = transform_audio_to_text(path)
     text = transform_audio_to_text(audiofilename)

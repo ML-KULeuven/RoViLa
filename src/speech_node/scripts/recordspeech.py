@@ -12,7 +12,7 @@ def handle_record_speech(request):
 
     print("RECORDING")
 
-    stream = p.open(format=request.sample_format,channels=request.channels,rate=request.frequency,frames_per_buffer=request.chunk_size,input=True)
+    stream = p.open(format=request.sample_format,channels=request.channels,rate=request.frequency,frames_per_buffer=request.chunk_size,input=True,input_device_index=6)
 
     frames = []
 

@@ -13,11 +13,25 @@ def record_speech_client():
     rospy.loginfo("Initializing main node...")
     rospy.init_node('centralnode',anonymous=True)
 
+    """
+    Using Jabra BIZ 2400 USB
+    --> defaultSampleRate = 16000.0
+    --> defaultLowOutputLatency = 0.024
+    --> defaultLowInputLatency = 0.024
+    --> maxInputChannels = 1L
+    --> structVersion = 2L
+    --> hostApi = 0L
+    --> index = 6
+    --> defaultHighOutpuLatency = 0.096
+    --> maxOutpuChannels = 2L
+    --> defaultHughInputLatency = 0.096
+    """
+
     chunk_size = 1024
     sample_format = pa.paInt16
-    channels = 2
-    frequency = 44100
-    seconds = 3
+    channels = 1
+    frequency = 16000
+    seconds = 5
 
     publisher = rospy.Publisher('central_to_actuator', String, queue_size=10)
 

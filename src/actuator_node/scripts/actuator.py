@@ -272,7 +272,7 @@ class Actuator:
 
         safe_pose = geometry_msgs.msg.Pose()
         safe_pose.position.x = unsafe_pose.position.x
-        safe_pose.position.y = unsafe_pose.position.y + 0.03
+        safe_pose.position.y = unsafe_pose.position.y
         safe_pose.position.z = unsafe_pose.position.z + 0.10
 
         return safe_pose
@@ -321,7 +321,7 @@ class Actuator:
         
         safe_pose = geometry_msgs.msg.Pose()
         safe_pose.position.x = unsafe_pose.position.x
-        safe_pose.position.y = unsafe_pose.position.y + 0.03
+        safe_pose.position.y = unsafe_pose.position.y
         safe_pose.position.z = unsafe_pose.position.z + 0.10
 
         return safe_pose

@@ -1,0 +1,14 @@
+Put the blue cube on the red cube.
+Put the red cube on the blue cube.
+Put the yellow cube on the blue cube.
+Put the blue cube on the yellow cube.
+Put the red cube on the yellow cube.
+Put the yellow cube on the red cube.
+
+Put the blue block on the red block.
+Put the red block on the blue block.
+Put the yellow block on the blue block.
+Put the blue block on the yellow block.
+Put the red block on the yellow block.
+Put the yellow block on the red block.
+
