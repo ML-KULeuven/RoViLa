@@ -186,7 +186,7 @@ class Actuator:
         operator_2_id = self.get_block_id(blocks[1].split("(",1)[0].strip())
 
         print("Waiting for an observation from the kinect camera")
-        observations_msg = rospy.wait_for_message('observer_node', Observations)
+        observations_msg = rospy.wait_for_message('observations', Observations)
         
         print(observations_msg)
 
@@ -500,10 +500,7 @@ def actuator_main():
 
     print("Actuator has been initialized")
 
-    #rospy.Subscriber("observer_node", Observations, act.callback, queue_size=1)
-   # rospy.Service('actuator_service' Action, act.handle_action)
-
-    msg = rospy.wait_for_message('central_to_actuator', String)
+    msg = rospy.wait_for_message('actuator_command', String)
     act.callback_main_node(msg)
     rospy.loginfo("Ready to spin")
     rospy.spin()

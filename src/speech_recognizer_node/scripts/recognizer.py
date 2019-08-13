@@ -6,14 +6,14 @@ import wave
 import speech_recognition as sr
 import os
 from std_msgs.msg import String
-from recognizer_node.srv import *
+from speech_recognizer_node.srv import *
 from os.path import expanduser
 from pocketsphinx import Pocketsphinx, get_model_path, get_data_path
 
 def construct_wav_file(request):
 
     user = expanduser("~")
-    path = user + "/DTAI_Internship/src/recognizer_node/audio/audio_in.wav"	
+    path = user + "/DTAI_Internship/src/speech_recognizer_node/audio/audio_in.wav"	
 
     p = pa.PyAudio()
 
@@ -29,7 +29,7 @@ def construct_wav_file(request):
 def transform_audio_to_text(filename):
 
     user = expanduser("~")
-    path = user + "/DTAI_Internship/src/recognizer_node/data/"
+    path = user + "/DTAI_Internship/src/speech_recognizer_node/data/"
 
     lm_file = path + "generated_language_model.lm"
     dict_file = path + "generated_dictionary.dic"
@@ -66,7 +66,7 @@ def handle_recognize_speech(request):
     print("WAV file constructed")
 
     user = expanduser("~")
-    path = user + "/DTAI_Internship/src/recognizer_node/audio/audio.wav"
+    path = user + "/DTAI_Internship/src/speech_recognizer_node/audio/audio.wav"
 
     #text = transform_audio_to_text(path)
     text = transform_audio_to_text(audiofilename)
@@ -75,11 +75,11 @@ def handle_recognize_speech(request):
 
 def recognize_speech_server():
 
-    print("Initializing recognizernode")
-    rospy.init_node('recognizernode', anonymous=True)
+    print("Initializing speech_recognizer_node")
+    rospy.init_node('speech_recognizer_node', anonymous=True)
 
-    service = rospy.Service('recognizer_service', AudioToText, handle_recognize_speech)
-    print("Service is now online")
+    service = rospy.Service('speech_recognizer_service', AudioToText, handle_recognize_speech)
+    print("Speech recognizer service is now online")
     rospy.spin()
 
 if __name__ == "__main__":

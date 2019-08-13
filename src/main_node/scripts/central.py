@@ -5,7 +5,7 @@ import pyaudio as pa
 import wave
 from std_msgs.msg import String
 from speech_node.srv import *
-from recognizer_node.srv import *
+from speech_recognizer_node.srv import *
 from parser_node.srv import *
 
 def record_speech_client():
@@ -33,7 +33,7 @@ def record_speech_client():
     frequency = 16000
     seconds = 5
 
-    publisher = rospy.Publisher('central_to_actuator', String, queue_size=10)
+    publisher = rospy.Publisher('actuator_command', String, queue_size=10)
 
     rospy.loginfo("Waiting for SpeechStream service to come online")
     rospy.wait_for_service('speech_service')
@@ -49,17 +49,17 @@ def record_speech_client():
     
     rospy.loginfo("Waiting for AudioToText service to come online")
     
-    rospy.wait_for_service('recognizer_service')
+    rospy.wait_for_service('speech_recognizer_service')
 
     try: 
-        recognize_audio = rospy.ServiceProxy('recognizer_service', AudioToText)
+        recognize_audio = rospy.ServiceProxy('speech_recognizer_service', AudioToText)
         response_recognizer_service = recognize_audio(frames,channels,sample_format,frequency)
         text = response_recognizer_service.text
 
         print("What was said:")
         print(text)
     except rospy.ServiceException, e:
-        print("Service call to the recognizer_service failed: %s"%e)
+        print("Service call to the speech_recognizer_service failed: %s"%e)
 
     print("Waiting for ParseTextToLogicForm service to come online")
     rospy.wait_for_service('parser_service')

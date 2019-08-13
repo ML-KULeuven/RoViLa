@@ -1,6 +1,13 @@
-# Project Title
+# Applications for Mico Robot Arm
 
-One Paragraph of project description goes here
+This repository contains ROS packages that are needed to operate the Mico robot arm developed by Kinova.  The implemented system can be used as a base for extension and implementation of functionalities for the robot arm.
+
+This README contains an overview of the prerequisites with hyperlinks to wiki-pages, tutorials and other git repositories. Subsequently an overview of the implemented system is given and discussed. Install instructions for this repo and all software prerequisites can be found in [INSTALL.md](INSTALL.md) to prevent this README from getting too long.
+
+## Overview
+<p align="center">
+	<img src="/home/dtai-robotarm/Pictures/Overview_ROS.png?raw=true" alt="Overview ROS"/>
+</p>
 
 ## Getting Started
 
@@ -29,7 +36,7 @@ Say what the step will be
 Give the example
 ```
 
-Atnd repeat
+And repeat
 
 ```
 until finished

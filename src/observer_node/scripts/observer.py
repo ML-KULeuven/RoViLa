@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import rospy
 import tf2_ros
-import tf
 import tf2_geometry_msgs
 import geometry_msgs.msg
 from ar_track_alvar_msgs.msg import AlvarMarkers
@@ -22,14 +21,14 @@ class Observer:
         self.origin_marker_frame = "ar_marker_{}".format(ROBOT_TAG_ID)
         self.camera_frame = "kinect2_link"
 
-        self.publisher = rospy.Publisher('observer_node', Observations, queue_size=1)
+        self.publisher = rospy.Publisher('observations', Observations, queue_size=1)
         rospy.loginfo("Initialized {}".format(self))
     
     def callback(self, msg):
         """
         This method serves as the callback for the ar_pose_marker topic to which the observer
         is subscribed. This callback method will tranform the detected ar tags and publish them
-        on the /observer_node topic.
+        on the /observations topic.
         The transformations that occur will have as main purpose to represent coordinates on
         the plane relative to the robot base.
         This means that there are at least 2 transforms:
