@@ -7,10 +7,10 @@ This README contains an overview of the recommended skills paired with useful tu
 Before doing any further work on this project, it is recommended to have a look at the [Recommended Skills](#recommended-skills) section. It is also advisable that any further work done on this repository is implemented and tested on the desktop that already contains this project instead of reinstalling the project on another computer. However, to facilitate reinstalation, a seperate markdown file is included that addresses the different components that have to be installed in case a [full (re)install](INSTALL.md) is needed.
 
 ## Recommended Skills
-Python
-Linux
-ROS
-XML
+* Python
+* Linux
+* ROS
+* XML
 
 ## Overview
 <p align="center">
