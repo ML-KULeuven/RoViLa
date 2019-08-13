@@ -2,7 +2,10 @@
 
 This repository contains ROS packages that are needed to operate the Mico robot arm developed by Kinova.  The implemented system can be used as a base for extension and implementation of functionalities for the robot arm.
 
-This README contains an overview of the prerequisites with hyperlinks to wiki-pages, tutorials and other git repositories. Subsequently an overview of the implemented system is given and discussed. Install instructions for this repo and all software prerequisites can be found in [INSTALL.md](INSTALL.md) to prevent this README from getting too long.
+This README contains an overview of the recommended skills paired with useful tutorials/wiki-pages/github repo's that can prove useful to read before working with the nodes in this repository. Subsequently an overview of the implemented system is given and the functionalities of this system are discussed. 
+
+Before doing any further work on this project, it is recommended to have a look at the [Recommended Skills](##Recommended Skills) section. It is also advisable that any further work done on this repository is implemented and tested on the desktop that already contains this project instead of reinstalling the project on another computer. However, to facilitate reinstalation, a seperate markdown file is included that addresses the different components that have to be installed in case a [full (re)install](INSTALL.md) is needed.
+
 
 ## Overview
 <p align="center">
@@ -25,28 +28,6 @@ This should contain the following:
 - Version of linux, ros, python, c++,...
 - pip freeze overview
 - dependency management
-
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-This should contain:
-- Ros install instructions
-- Handling dependencies
 
 ## Deployment
 The src directory contains the following:
@@ -84,6 +65,6 @@ Executing catkin_make in the root of this workspace will build the project
 * **Pieter-Jan Coenen** - *The text to logic form parser*
 
 ## License
-
+##Recommended Skills
 ## Acknowledgments
 
