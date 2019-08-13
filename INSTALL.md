@@ -1,4 +1,5 @@
-#Install instructions
+# Install instructions
+
 These instructions will give a detailed overview of the steps that were followed to get the different components of this system installed in case anyone would ever need to reinstall the system.
 
 ```
@@ -12,6 +13,19 @@ Distributional Clauses
 TF2_ROS
 Incorporating ROS and MoveIt	
 ```
+
+## Prerequisites
+
+What things you need to install the software and how to install them
+
+```
+Give examples
+```
+
+This should contain the following:
+- Version of linux, ros, python, c++,...
+- pip freeze overview
+- dependency management
 
 ### Installing
 
