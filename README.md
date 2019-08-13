@@ -6,7 +6,7 @@ This README contains an overview of the prerequisites with hyperlinks to wiki-pa
 
 ## Overview
 <p align="center">
-	<img src="/home/dtai-robotarm/Pictures/Overview_ROS.png?raw=true" alt="Overview ROS"/>
+	<img src="images/Overview_ROS.png?raw=true" alt="Overview ROS"/>
 </p>
 
 ## Getting Started
