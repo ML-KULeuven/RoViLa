@@ -16,9 +16,11 @@ Before doing any further work on this project, it is recommended to have a look 
 <figure align="center">
 	<img src="images/Overview_ROS.png?raw=true" alt="Overview ROS"/>
 </figure>
-Shown in this figure are the two main subcomponents of this project: [Speech To Logic Form](#speech-to-logic-form) and [Logic Form To Robot Action](#logic-form-to-robot-action)
 
-## Speech To Logic Form
+
+Shown in this figure are the two main subcomponents of this project: [<i>Speech-To-Logic-Form</i>](#speech-to-logic-form) and [<i>Logic-Form-To-Robot-Action</i>](#logic-form-to-robot-action)
+
+## Speech-To-Logic-Form
 The purpose of this component is transforming speech, input through a microphone, to a logical format that can be processed easily by the <i>Logic-Form-To-Robot-Action</i> component.
 
 ### speech_node
@@ -37,7 +39,7 @@ This Java package contains the text-to-logic-form parsing component which will t
 
 This ROS package contains the main node that will be running constantly while the system is being executed, it will direct messages and issue service requests to other components.
 
-## Logic Form To Robot Action
+## Logic-Form-To-Robot-Action
 
 ### observer_node
 
