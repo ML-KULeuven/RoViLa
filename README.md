@@ -1,3 +1,4 @@
+
 # Applications for Mico Robot Arm
 
 This repository contains ROS packages that are needed to operate the Mico robot arm developed by Kinova.  The implemented system can be used as a base for extension and implementation of functionalities for the robot arm.
@@ -13,31 +14,76 @@ Before doing any further work on this project, it is recommended to have a look 
 * XML
 
 ## High-level overview of the system
-<figure align="center">
+<!--figure align="center">
 	<img src="images/Overview_ROS.png?raw=true" alt="Overview ROS"/>
-</figure>
+</figure-->
 
 
-Shown in this figure are the two main subcomponents of this project: [<i>Speech-To-Logic-Form</i>](#speech-to-logic-form) and [<i>Logic-Form-To-Robot-Action</i>](#logic-form-to-robot-action)
+Shown in this figure are the two main subcomponents of this project: [<i>Speech-To-Logic-Form</i>](#speech-to-logic-form) and [<i>Logic-Form-To-Robot-Action</i>](#logic-form-to-robot-action). The first will retrieve speech input and parse it to logic form by using a pre-trained parser. The second will take this parsed string as input and use observations of the world around the robot to execute the action expressed in the logic form.
 
 ## Speech-To-Logic-Form
-The purpose of this component is transforming speech, input through a microphone, to a logical format that can be processed easily by the <i>Logic-Form-To-Robot-Action</i> component.
+The purpose of this component is transforming speech, input through a microphone, to a logical format that can be processed easily by the <i>Logic-Form-To-Robot-Action</i> component. 
 
-### speech_node
+You can run this component by executing the following command in terminal:
 
-Contains the speech recording component which accepts spoken and typed input.
+```bash
+roslaunch main_node main_process.launch
+```
 
-### speech_recognizer_node
-
-Contains the component that will transform the audio input into a textual representation.
-
-### parser_node
- 
-This Java package contains the text-to-logic-form parsing component which will tranform text into logic form understandable by the robot arm.
+The [main_process.launch file](src/main_node/launch/main_process.launch) contains the ROS nodes that need to be started when the above command is executed. This launch file will launch the following ROS nodes (in order): the <i>main\_node</i>, the <i>speech\_node</i>, the <i>speech\_recognizer\_node</i> and finally the <i>parser\_node</i>.
 
 ### main_node
 
-This ROS package contains the main node that will be running constantly while the system is being executed, it will direct messages and issue service requests to other components.
+This ROS package contains the main node that will be running constantly while the <i>Speech-To-Logic-Form</i> component is being executed. The purpose of this node is to facilitate communication between nodes. Therefore <i>main\_node</i> will act as a middleman that requests services provided by the other 3 components. Finally, once the services provided by the <i>speech\_node</i>, <i>speech\_recognizer\_node</i> and <i>parser\_node</i> have been called, the main node will publish the parsed logic form as a String on the ```/actuation_command``` topic.
+
+### speech_node
+
+The speech\_node ROS package provides the <i>SpeechStream</i> service to the main node. 
+
+```bash
+ # request fields
+int64 chunk_size
+int64 sample_format
+int64 channels
+int64 frequency
+int64 seconds
+---
+ # response fields
+string[] stream
+```
+ 
+This ROS package uses PYAUDIO
+
+### speech_recognizer_node
+
+The speech\_recognizer\_node ROS package provides the <i>AudioToText</i> service to the main node
+
+```bash
+ # request fields
+string[] frames
+int64 channels
+int64 sample_format
+int64 frequency
+---
+ # response fields
+string text
+```
+
+This ROS package uses SPEECH_RECOGNITION AND POCKETSPHINX
+
+### parser_node
+ 
+The parser\_node ROS package provides the <i>ParseTextToLogicForm</i> service to the main node.
+
+```bash
+ # request fields
+string text
+---
+ # response fields
+string parsed
+```
+
+This ROS package uses a logical parser developed by Pieter-Jan ...
 
 ## Logic-Form-To-Robot-Action
 
@@ -67,4 +113,7 @@ Executing catkin_make in the root of this workspace will build the project
 ## License
 
 ## Acknowledgments
+
+
+
 
