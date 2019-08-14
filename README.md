@@ -7,29 +7,24 @@ This README contains an overview of the recommended skills paired with useful tu
 Before doing any further work on this project, it is recommended to have a look at the [Recommended Skills](#recommended-skills) section. It is also advisable that any further work done on this repository is implemented and tested on the desktop that already contains this project instead of reinstalling the project on another computer. However, to facilitate reinstalation, a seperate markdown file is included that addresses the different components that have to be installed in case a [full (re)install](INSTALL.md) is needed.
 
 ## Recommended Skills
-* Python
-* Linux
-* ROS
+* Python2.7
+* Linux (Ubuntu 16.04)
+* ROS (Kinetic)
 * XML
 
-## Overview
-<p align="center">
+## High-level overview of the system
+<figure align="center">
 	<img src="images/Overview_ROS.png?raw=true" alt="Overview ROS"/>
-</p>
+	<figcaption>The two main subcomponents of the system: [<i>Speech To Logic Form</i>](#speech-to-logic-form) and [<i>Logic Form To Robot Action</i>](#logic-form-to-robot-action)</figcaption>
+</figure>
 
 
-## Deployment
-The src directory contains the following:
-
-
-### main_node
-
-This ROS package contains the main node that will be running constantly while the system is being executed, it will direct messages and issue service requests to other components.
-
+## Speech-To-Logic-Form
+The purpose of this component is transforming speech, input through a microphone, to a logical format that can be processed easily by the <i>Logic-Form-To-Robot-Action</i> component.
 
 ### speech_node
 
-Contains the speech recording component which (for now) accepts spoken and typed input.
+Contains the speech recording component which accepts spoken and typed input.
 
 ### speech_recognizer_node
 
@@ -38,6 +33,12 @@ Contains the component that will transform the audio input into a textual repres
 ### parser_node
  
 This Java package contains the text-to-logic-form parsing component which will tranform text into logic form understandable by the robot arm.
+
+### main_node
+
+This ROS package contains the main node that will be running constantly while the system is being executed, it will direct messages and issue service requests to other components.
+
+## Logic-Form-To-Robot-Action
 
 ### observer_node
 
