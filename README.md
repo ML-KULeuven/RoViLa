@@ -8,10 +8,16 @@ This README contains an overview of the recommended skills paired with useful tu
 Before doing any further work on this project, it is recommended to have a look at the [Recommended Skills](#recommended-skills) section. It is also advisable that any further work done on this repository is implemented and tested on the desktop that already contains this project instead of reinstalling the project on another computer. However, to facilitate reinstalation, a seperate markdown file is included that addresses the different components that have to be installed in case a [full (re)install](INSTALL.md) is needed.
 
 ## Recommended Skills
-* Python2.7
+* Python2.7 --> ROS  does not support python3 in kinetic
 * Linux (Ubuntu 16.04)
 * ROS (Kinetic)
 * XML
+
+## Prerequisites
+See [(re)install-instructions](INSTALL.md) to verify that you have everything in case you plan on doing a reinstall.
+
+Other prerequisites:
+* pip : ```sudo apt-get install python-pip```
 
 ## High-level overview of the system
 <!--figure align="center">
@@ -38,7 +44,7 @@ This ROS package contains the main node that will be running constantly while th
 
 ### speech_node
 
-The speech\_node ROS package provides the <i>SpeechStream</i> service to the main node. 
+The speech\_node ROS package provides the <i>SpeechStream</i> service to the main node. At the start of the system the main node will request input from the speech service. The speech service will record what the user says and parse this recording into a string array.
 
 ```bash
  # request fields
@@ -52,7 +58,18 @@ int64 seconds
 string[] stream
 ```
  
-This ROS package uses PYAUDIO
+This ROS package uses the PyAudio python streaming library, to enable speech input from python code.  This library also ensures reliable parsing of the given speech input If this package is not yet installed on your system use the following:
+```bash
+python2.7 -m pip install pyaudio
+```
+If the above install failse with an error:  <b>Failed building wheel for pyaudio</b>.
+Then install the following packages and try again, this should solve the issue.
+```bash
+sudo apt install libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg libav-tools
+python2.7 -m pip install pyaudio
+```
+
+The launch file of the main node contains parameters that specity the information that is needed to make python receive input from your microphone.
 
 ### speech_recognizer_node
 
@@ -90,6 +107,8 @@ This ROS package uses a logical parser developed by Pieter-Jan ...
 ### observer_node
 
 Contains the oberver component which uses the kinect2 camera to detec AR_tags
+
+Need to install AR_MARKERS PACKAGES!!
 
 ### actuator_node
 
