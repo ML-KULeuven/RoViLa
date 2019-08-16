@@ -191,12 +191,13 @@ You should see the following:
 </figure>
 
 ## CONFIGURING MICO ARM
-The Mico arm is a robot arm developed by Kinova. To be able to send commands to the robot arm from ROS the firmware on the robot has to be up to date. The versions originally used in this projects will be included here as well as instructions on how to install both the SDK and the firmware.
+The Mico arm is a robot arm developed by Kinova. To be able to send commands to the robot arm from ROS the firmware on the robot has to be up to date. The versions originally used in this projects will be included here as well as instructions on how to download and install both the SDK and the firmware.
 
 Plug in the robot and attach usb to pc before going forward!!
 
 ### Mico SDK
-The dependencies folder in this repository includes a pre-downloaded SDK zip.
+The Mico SDK can be downloaded from the following google drive link:
+[Mico SDK](https://drive.google.com/file/d/1RzvwinEiJbrmEMaIkKzHu4qwZ4JjYGXC/view)
 
 * Unpack the zip file:
 ```bash
@@ -211,7 +212,8 @@ unzip Kinova_SDK_MICO_1_5_1.zip -d Kinova_SDK
 --> This will install the preliminaries and the opens an installer to guide the installation of the actual development center.
 
 ### Mico Firmware
-The dependencies folder in this repository includes a pre-downloaded Firmware zip.
+The firmware for the Mico robot can be downloaded from the following google drive link:
+[Mico Firmware](https://drive.google.com/file/d/1DHH9zGHirwnICzReW6tGHddEfr7OUTor/view)
 
 * Unpack the zip file containing the firmware:
 ```bash
