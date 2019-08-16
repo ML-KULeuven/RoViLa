@@ -5,24 +5,93 @@ This repository contains ROS packages that are needed to operate the Mico robot 
 
 This README contains an overview of the recommended skills paired with useful tutorials/wiki-pages/github repo's that can prove useful to read before working with the nodes in this repository. Subsequently an overview of the implemented system is given and the functionalities of this system are discussed. 
 
-Before doing any further work on this project, it is recommended to have a look at the [Recommended Skills](#recommended-skills) section. It is also advisable that any further work done on this repository is implemented and tested on the desktop that already contains this project instead of reinstalling the project on another computer. However, to facilitate reinstalation, a seperate markdown file is included that addresses the different components that have to be installed in case a [full (re)install](INSTALL.md) is needed.
+Before doing any further work on this project, it is recommended to have a look at the [Recommended Skills](#recommended-skills) section. It is also advisable that any further work done on this repository is implemented and tested on the desktop that already contains this project instead of reinstalling the project on another computer. However, to facilitate reinstalation, a seperate markdown file is included that addresses the different components that have to be installed in case a [full (re)install](INSTALL.md) is needed. 
 
 ## Recommended Skills
 * Python2.7 --> ROS  does not support python3 in kinetic
 * Linux (Ubuntu 16.04)
 * ROS (Kinetic)
-* XML
 
-## Prerequisites
+## Cloning this repository
 See [(re)install-instructions](INSTALL.md) to verify that you have everything in case you plan on doing a reinstall.
 
-Other prerequisites:
-* pip : ```sudo apt-get install python-pip```
+If that is the case or if you want a fresh copy on an already configured system, this repository can be cloned as follows:
+
+```bash
+git clone --recurse-submodules https://github.com/ML-KULeuven/RoViLa
+```
+
+This will also clone the kinova-ros and iai_kinect2 packages.
+After cloning the repository and its submodules, you need to move the folders provided in the [dependencies directory](dependencies/) to the correct directories in the submodules.
+
+The [dependencies/data/502039243042](dependencies/data/502039243042/) directory contains calibration files for the used kinect2 camera. (note if you are using another kinect2 camera these files might not work because calibration is camera-specific). It should be moved to the data directory under the kinect2_bridge package.
+
+The [dependencies/m1n6s200_moveit_config](dependencies/m1n6s200_moveit_config/) directory contains configuration files that have been made with the moveit setup assistant specifically for the robot in use (Mico 1 6DOF 2 fingers). It should be moved to the robot_configs directory under the kinova_moveit package.
+
+```bash
+cd ~/RoViLa
+cp -r dependencies/data/502039243042 src/iai_kinect2/kinect2_bridge/data/
+cp -r dependencies/m1n6s200_moveit_config/ src/kinova-ros/kinova_moveit/robot_configs/
+```
+
+Subsequently add the .rules files from the kinova-ros package to the rules.d directory on your system to be able to access the robot arm via usb:
+
+```bash
+sudo cp kinova_driver/udev/10-kinova-arm.rules /etc/udev/rules.d/
+```
+
+If the instructions from the reinstall page have been followed or if you simply want a fresh copy of this repository on an already configured system, you should now be able to use catkin_make to build the RoViLa workspace:
+
+```bash
+cd ~/RoViLa
+catkin_make
+```
+
+Don't forget to source the workspace:
+```bash
+source ~/RoViLa/devel/setup.bash
+```
+
+You should now be able to test the iai_kinect2 package as follows:
+* Connect the kinect2 camera and run the kinect2_bridge node:
+```bash
+roslaunch kinect2_bridge kinect2_bridge.launch
+```
+
+* View the results with:
+```bash
+rosrun kinect2_viewer kinect2_viewer kinect2 sd cloud
+```
+
+You should see the following:
+<figure align="center">
+	<img src="images/Kinect2_bridge.png?raw=true" alt="kinect2_bridge"/>
+</figure>
+
+You should also be able to test the kinova-ros package with the actual robot by executing the following:
+
+* Restart the robot
+* Launch the kinova_bringup node for the used robot (in this case m1n6s200):
+```bash
+roslaunch kinova_bringup kinova_robot.launch kinova_robotType:=m1n6s200
+```
+
+This should open the fingers on the robot
+You should then be able to call the following command to home the robot (from another terminal):
+```bash
+rosservice call /m1n6s200_driver/in/home_arm
+```
+
+And the arm should move to its home position.
+<figure align="center">
+	<img src="images/robot_arm_positions.jpg?raw=true" alt="Rest and Home positions of robot arm" style="width:100%"/>
+</figure>
+
 
 ## High-level overview of the system
-<!--figure align="center">
+<figure align="center">
 	<img src="images/Overview_ROS.png?raw=true" alt="Overview ROS"/>
-</figure-->
+</figure>
 
 
 Shown in this figure are the two main subcomponents of this project: [<i>Speech-To-Logic-Form</i>](#speech-to-logic-form) and [<i>Logic-Form-To-Robot-Action</i>](#logic-form-to-robot-action). The first will retrieve speech input and parse it to logic form by using a pre-trained parser. The second will take this parsed string as input and use observations of the world around the robot to execute the action expressed in the logic form.

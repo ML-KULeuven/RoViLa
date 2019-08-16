@@ -112,32 +112,7 @@ If everything went well you should see a window showing 4 camera view, like this
 </figure>
 
 ### iai_kinect2
-The iai_kinect2 repository contains ROS nodes that provide an interface to the kinect2 camera. Therefore this repository should be cloned and configured within the catkin\_workspace that contains the project that will use the kinect2 camera.
-
-* Clone the iai_kinect2 repository into your catking workspace, install the ROS dependencies and build it:
-```bash
-cd ~/<catkin_ws_name>/src/
-git clone https://github.com/code-iai/iai_kinect2.git
-cd iai_kinect2
-rosdep install -r --from-paths .
-cd ~/<catkin_ws_name>
-catkin_make -DCMAKE_BUILD_TYPE="Release"
-```
-
-* Connect the kinect2 camera and run the kinect2_bridge node:
-```bash
-roslaunch kinect2_bridge kinect2_bridge.launch
-```
-
-* View the results with:
-```bash
-rosrun kinect2_viewer kinect2_viewer kinect2 sd cloud
-```
-
-You should see the following:
-<figure align="center">
-	<img src="images/Kinect2_bridge.png?raw=true" alt="Overview ROS"/>
-</figure>
+This package is included as a submodule in this repository and should therefore not be installed seperately. Once you have finished the rest of these instructions, read the instructions under [Cloning this repository](README.md/#cloning-this-repository)
 
 ## CONFIGURING MICO ARM
 The Mico arm is a robot arm developed by Kinova. To be able to send commands to the robot arm from ROS the firmware on the robot has to be up to date. The versions originally used in this projects will be included here as well as instructions on how to download and install both the SDK and the firmware.
@@ -209,39 +184,8 @@ sudo apt-get install ros-indigo-trac-ik
 ```
 
 ### Installing kinova-ros
-Like iai_kinect2, the kinova-ros repository contains a collection of ROS nodes that can be used in the ROS system. Therefore this repository should be chained with the workspace from which you want to develop a project that uses the robot.
+Like iai_kinect2, the kinova-ros repository is included as a submodule in this project. Therefore it should not be installed seperatly. Once you have finished the other instructions in this file, read the instructions under [Cloning this repository](README.md/#cloning-this-repository).
 
-* Clone and make the repository inside the catkin_ws containing the project for the robot:
-```bash
-cd ~/<catkin_ws_name>/src
-git clone https://github.com/Kinovarobotics/kinova-ros.git kinova-ros
-cd ~/<catkin_ws_name>
-catkin_make
-```
-
-* Configure the udev file to be able to access the arm via usb:
-```bash
-sudo cp kinova_driver/udev/10-kinova-arm.rules /etc/udev/rules.d/
-```
-
-* Source the repository
-```bash
-source ~/<catkin_ws_name>/devel/setup.bash
-```
-
-* Restart the robot
-* Launch the kinova_bringup node:
-```bash
-roslaunch kinova_bringup kinova_robot.launch kinova_robotType:=m1n6s200
-```
-
-This should open the fingers on the robot
-You should then be able to call the following command to home the robot (from another terminal):
-```
-rosservice call /m1n6s200_driver/in/home_arm
-```
-
-And the arm should move to its home position.
 
 ## CONFIGURING MICO ARM MOVEIT CONFIGURATION
 This repository includes a moveit configuration for the MICO robot arm m1n6s200. This configuration is stored under the dependencies folder: [m1n6s200_moveit_config](dependencies/). 
