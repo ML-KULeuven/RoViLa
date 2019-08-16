@@ -1,54 +1,3 @@
-# Install instructions
-
-These instructions will give a detailed overview of the steps that were followed to get the different components of this system installed in case anyone would ever need to reinstall the system.
-
-```
-ROS kinetic
-Kinect camera
-Mico SDK
-Kinova ROS
-	- MoveIT
-	- Gazebo
-Distributional Clauses
-TF2_ROS
-Incorporating ROS and MoveIt	
-```
-
-## Prerequisites
-
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
-
-This should contain the following:
-- Version of linux, ros, python, c++,...
-- pip freeze overview
-- dependency management
-
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-This should contain:
-- Ros install instructions
-- Handling dependencies
-
 # FULL REINSTALLATION INSTRUCTIONS
 
 The steps described in this document are the steps I did when installing everything and making everything work together. These instructions can be followed as a guideline when installing the repository or when upgrading to newer versions.
@@ -295,5 +244,11 @@ rosservice call /m1n6s200_driver/in/home_arm
 And the arm should move to its home position.
 
 ## CONFIGURING MICO ARM MOVEIT CONFIGURATION
-This repository includes a moveit configuration for the MICO robot arm m1n6s200.
+This repository includes a moveit configuration for the MICO robot arm m1n6s200. This configuration is stored under the dependencies folder: [m1n6s200_moveit_config](dependencies/). 
+
+After cloning this repository this file should be copied to the robot_configurations in the kinova-ros package:
+```bash
+cd ~/RoViLa
+cp -r depencencies/m1n6s200_moveit_config/ src/kinova-ros/kinova_moveit/robot_configs/
+```
 
