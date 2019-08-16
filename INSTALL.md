@@ -40,6 +40,13 @@ source ~/.bashrc
 sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential
 ```
 
+## AR TAGS
+To be able to recognize the ar tags, the ar_track_alvar ROS package needs to be installed:
+
+```bash
+sudo apt-get install ros-kinetic-ar-track-alvar
+```
+
 ## INSTALLING KINECT2
 The following instructions will enable incorporation of the kinect2 camera in the ROS system. First <i>libfreenect</i> needs to be installed, this is the driver for the kinect2 camera. Subsequently iai_kinect2 needs to be installed. This is a collection of tools and libraries forms a ROS interface to the kinect2 camera. Enabling users to gather video observations from the camera from inside ROS.
 

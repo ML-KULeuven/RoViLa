@@ -155,7 +155,17 @@ int64 frequency
 string text
 ```
 
-This ROS package uses SPEECH_RECOGNITION AND POCKETSPHINX
+This ROS package first transforms the stream of frames to a WAV audio file with pyaudio. Then, this node will use PocketSphinx to tansform a stream of frames to a String. Pocketsphinx is a python library for speech recognition which is a subset of CMUSphinx. It can be installed as follows:
+
+```bash
+sudo apt-get install -y python python-dev python-pip build-essential swig git libpulse-dev libasound2-dev
+python2.7 -m pip install pocketsphinx
+```
+
+Pocketsphinx comes with its own vocabulary, dictionary and language models. To avoid the language models giving back sentences that do not correspond with what was said, I have provided a custom corpus, dictionary and LM included in the [data directory](src/speech_recognizer_node/data) of the speech_recognizer_node. The sentences in the [corpus](src/speech_recognizer_node/data/corpus.txt) show possible commands that can be given to the system. This can be extended to include other commands like for example: <i> Put the red cube between the blue cube and the yellow cube</i>. However, when sentences are added to the corpus, the dictionary and language model files have to be re-generated. The [lmtool](http://speech.cs.cmu.edu/tools/lmtool-new.html) from the CMUSPhinx webpage can be used for this. Once the files have been generated, a zip file can be downloaded and the new LM and dictionary can be copied to the data directory replacing the old ones. (You will either have to rename dictionary and LM files to match the names of the old ones or change the paths provided in the [recognizer.py script](src/speech_recognizer_node/scripts/recognizer.py).
+
+
+
 
 ### parser_node
  
