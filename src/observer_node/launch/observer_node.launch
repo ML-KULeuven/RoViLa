@@ -1,0 +1,46 @@
+<launch>
+	
+	<!-- OBSERVER NODE -->
+	<node name="observer_node" pkg="observer_node" type="observer.py" output="screen" />
+	<remap from="kinect2/qhd/image_color" to="image" />
+	
+	<!-- AR TRACKING WITH ALVAR -->
+	<arg name="marker_size" default="3.8" />
+	<arg name="max_new_marker_error" default="0.08" />
+	<arg name="max_track_error" default="0.2" />
+
+	<arg name="cam_image_topic" default="/kinect2/hd/image_color" />
+	<arg name="cam_info_topic" default="/kinect2/hd/camera_info" />
+	<arg name="output_frame" default="/kinect2_link" />
+
+	<node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
+		<param name="marker_size" type="double" value="$(arg marker_size)" />
+		<param name="max_new_marker_error" type="double" value="$(arg max_new_marker_error)" />
+		<param name="max_track_error" type="double" value="$(arg max_track_error)" />
+		<param name="output_frame" type="string" value="$(arg output_frame)" />
+
+		<remap from="camera_image" to="$(arg cam_image_topic)" />
+		<remap from="camera_info" to="$(arg cam_info_topic)" />
+	</node>	
+
+	<!-- KINECT2_BRIDGE LAUNCHING -->
+	<include file="/home/dtai-robotarm/DTAI_Internship/src/observer_node/launch/kinect2_bridge.launch"/>
+
+
+	<!-- LAUNCH STATIC TRANSFORM -->
+	<!-- The arguments express (in order) x-co y-co z-co yaw pitch roll -->
+	<!-- Distance is in meters, rotation is in radians -->
+	<!-- This static transform represents the transformation from the center of ar_marker_1 to the center of the robotarm-base -->
+	<!-- The x-coordinate represents the distance along the x-axis (HORIZONTAL) -->
+	<!-- The y-coordinate represents the distance along the y-axis (VERTICAL) -->
+	<!-- The z-coordinate represents the distance along the z-axis (PERPENDICULAR) -->
+	<!-- Yaw is rotation along the z-axis, there is none in this case -->
+	<!-- Pitch is rotation along the y-axis, ar_marker_1 is rotated 180° along the y-axis so there's a pitch of pi (3.141593) radians -->
+	<!-- Roll is rotation along the x-axis, there is none in this case -->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="kinova_base_link_broadcaster" args="-0.0575 0.0275 0.047 0 0 0 ar_marker_1 m1n6s200_link_base" />
+	<!--node pkg="tf2_ros" type="static_transform_publisher" name="kinova_base_link_broadcaster" args="0.065 -0.034 -0.02 0 0 0 ar_marker_1 m1n6s200_link_base" /-->
+
+	<!-- THIS MAY BE WRONG BECAUSE IN HANOI CODE THERE IS NO PITCH, THERE IS YAW (PI RADIANS) -->
+
+
+</launch>

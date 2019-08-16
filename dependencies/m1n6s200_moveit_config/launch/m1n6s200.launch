@@ -1,0 +1,55 @@
+<launch>
+	<!-- By default, we do not start a database (it can be large) -->
+	<arg name="db" default="false" />
+
+	<!-- By default, we do not start rviz -->
+	<arg name="viz" default="false" />
+
+	<!-- By default, we are not in debug mode -->
+	<arg name="debug" default="false" />
+
+	<arg name="use_gui" default="false"/>
+
+	<!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
+	<include file="$(find m1n6s200_moveit_config)/launch/planning_context.launch">
+		<arg name="load_robot_description" value="true" />
+	</include>
+
+	<!-- If needed, broadcast static tf for robot root!!!! -->
+
+	<!-- Run joint trajectory action server, which receives planned motion goal under "follow_joint_trajectory", and publish ROS standard trajectory via topic "command". Then for specified robot, the trajectory will be interpreted to their own joint trajectory controller -->
+	<node name="m1n6s200_joint_trajectory_action_server" pkg="kinova_driver" type="joint_trajectory_action_server" output="screen" respawn="false" args="m1n6s200" />
+
+	<!-- Run gripper command action server, which receives planned motion goal under "gripper_command". After receiving the command from Moveit Rviz Plugin, this node act as an actionlib client and send the goal to the finger position action server from kinova_driver.  -->
+	<node name="m1n6s200_gripper_command_action_server" pkg="kinova_driver" type="gripper_command_action_server" output="screen" respawn="false" args="m1n6s200" />
+
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+		<param name="/use_gui" value="$(arg use_gui)"/>
+		<rosparam param="/source_list">[/move_group/joint_states]</rosparam>
+	</node>
+
+	<!-- Given the published joint states, publish tf for the robot links -->
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+
+	<!-- Run the main MoveIt executable with trajectory execution -->
+  	<include file="$(find m1n6s200_moveit_config)/launch/move_group_m1n6s200.launch">
+    		<arg name="allow_trajectory_execution" value="true"/>
+    		<arg name="fake_execution" value="false"/>
+    		<arg name="info" value="true"/>
+    		<arg name="debug" value="$(arg debug)"/>
+		<!--arg name="joint_states_ns" value="/m1n6s200_driver/out/joint_state"/--> 
+    		<!--arg name="controller_manager" value="m1n6s200"/--> 
+  	</include>
+
+	<!-- If Rviz is being used (i.e. viz = true) then load the default configuration to see the state of the move_group node -->
+	<include file="$(find m1n6s200_moveit_config)/launch/moveit_rviz.launch" if="$(arg viz)">
+		<arg name="config" value="true" />
+		<arg name="debug" value="$(arg debug)"/>
+	</include>
+
+	<!-- If database loading was enabled, start the database -->
+	<include file="$(find m1n6s200_moveit_config)/launch/default_warehouse_db.launch" if="$(arg db)">
+    		<arg name="moveit_warehouse_database_path" value="$(arg db_path)"/>
+	</include>
+
+</launch>	

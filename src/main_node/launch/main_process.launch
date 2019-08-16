@@ -1,0 +1,11 @@
+<launch>
+
+	<node name="main_node" pkg="main_node" type="central.py" respawn="false" output="screen"/>
+
+	<node name="speech_node" pkg="speech_node" type="recordspeech.py" respawn="true" output="screen"/>
+
+	<node name="speech_recognizer_node" pkg="speech_recognizer_node" type="recognizer.py" respawn="true" output="screen"/>
+
+	<node name="parser_node" pkg="parser_node" type="parsing.py" respawn="true" output="screen"/>
+
+</launch>
