@@ -1,16 +1,16 @@
 
-# Applications for Mico Robot Arm
+# RoViLa: Robot-Vision-Language
 
 This repository contains ROS packages that are needed to operate the Mico robot arm developed by Kinova.  The implemented system can be used as a base for extension and implementation of functionalities for the robot arm.
 
 This README contains an overview of the recommended skills paired with useful tutorials/wiki-pages/github repo's that can prove useful to read before working with the nodes in this repository. Subsequently an overview of the implemented system is given and the functionalities of this system are discussed. 
 
-Before doing any further work on this project, it is recommended to have a look at the [Recommended Skills](#recommended-skills) section. It is also advisable that any further work done on this repository is implemented and tested on the desktop that already contains this project instead of reinstalling the project on another computer. However, to facilitate reinstalation, a seperate markdown file is included that addresses the different components that have to be installed in case a [full (re)install](INSTALL.md) is needed. 
+Before doing any further work on this project, it is recommended to have a look at the [Prerequisites](#recommended-skills) section. It is also advisable that any further work done on this repository is implemented and tested on the desktop that already contains this project instead of reinstalling the project on another computer. However, to facilitate reinstalation, a seperate markdown file is included that addresses the different components that have to be installed in case a [full (re)install](INSTALL.md) is needed. 
 
-## Recommended Skills
+## Prerequisites
 * Python2.7 --> ROS  does not support python3 in kinetic
 * Linux (Ubuntu 16.04)
-* ROS (Kinetic)
+* ROS (Kinetic): [tutorials](http://wiki.ros.org/ROS/Tutorials)
 
 ## Cloning this repository
 See [(re)install-instructions](INSTALL.md) to verify that you have everything in case you plan on doing a reinstall.
@@ -53,6 +53,7 @@ source ~/RoViLa/devel/setup.bash
 ```
 
 You should now be able to test the iai_kinect2 package as follows:
+
 * Connect the kinect2 camera and run the kinect2_bridge node:
 ```bash
 roslaunch kinect2_bridge kinect2_bridge.launch
@@ -87,6 +88,34 @@ And the arm should move to its home position.
 	<img src="images/robot_arm_positions.jpg?raw=true" alt="Rest and Home positions of robot arm" style="width:100%"/>
 </figure>
 
+
+## Running the system
+To run the entire system, plug in the kinect camera (USB 3.0!) and the Mico arm. Then turn on the Mico arm and execute the following steps:
+
+* Open a terminal and run kinova_bringup to launch the drivers for the Mico arm (m1n6s200):
+```bash
+roslaunch kinova_bringup kinova_bringup.launch kinova_robotType:=m1n6s200
+```
+
+* Open a new terminal window and run the observer node, this node will launch the kinect2_bridge node. WARNING: This node is prone to error if the camera cannot clearly see ar_marker_1. If an error is shown that says that there are unconnected trees, kill the observer node and start it again.
+```bash
+roslaunch observer_node observer_node.launch
+```
+
+* Open another terminal and start the custom moveit configuration for the Mico robot arm, this will also start the rviz plugin that can be used to display trajectories and to do simulations with the robot even if it is not connected (in that case use m1n6s200_virtual_robot.launch):
+```bash
+roslaunch m1n6s200_moveit_config m1n6s200_demo.launch
+```
+
+* Open a fourth terminal and start the actuator node that will home the robot arm and then move it to the starting position:
+```bash
+roslaunch actuator_node actuator_node.launch
+```
+
+* Open one last terminal and wait till the robot is in its starting position, then execute the following command to record speech input and in the end give a command to the robot arm:
+```bash
+roslaunch main_node main_process.launch
+```
 
 ## High-level overview of the system
 <figure align="center">
@@ -179,22 +208,61 @@ string text
 string parsed
 ```
 
-This ROS package uses a logical parser developed by Pieter-Jan ...
+This ROS package is based on a logical parser developed by Pieter-Jan Coenen. I made small adjustments to his code to be able to make a runnable jar file that could in turn be executed from a python script. I chose to do this instead of using ROSJava (a ROS workspace environment for Java), because incorporating ROSJava with the normal ROS installation was non-trivial. The code Pieter-Jan wrote, along with the small adjustments I made can be found in the following repository: [GenLex](https://github.com/ML-KULeuven/GenLex). The jar file has already been made and is included in the [scripts/jar](src/parser_node/scripts/jar/) directory of the parser node as well as a folder containing different trained vectors.
+
+To be able to execute the [parsing.py](src/parser_node/scripts/parsing.py) script, openjdk-8 must be installed:
+```bash
+sudo apt-get install openjdk-8-jdk
+```
+
+To check if the jar executes correctly you can run the following command in the scripts/jar directory of the parser_node:
+```bash
+cd ~/RoViLa/src/parser_node/scripts/jar/
+java -jar parsing.jar trained_vectors/trained_fold_0 "Put the blue cube on the red cube."
+```
+The output should be:
+Put(On(Blue(Block(null)), Red(Block(null))))
+
+When the parser_node is called by the main node, the string recognized by pocketsphinx from the speech input, is provided. This string is parsed using the default <i>trained_fold_0</i> weights.
 
 ## Logic-Form-To-Robot-Action
+Once the main node gets a response from the parser node containing the parsed string, it calls the actuator node. The actuater_node package will call the observation_node package to get the observations that the camera currently sees to then deduce whether the given command can be executed by the robot arm.
 
 ### observer_node
 
-Contains the oberver component which uses the kinect2 camera to detec AR_tags
+The observer_node package uses the kinect2_bridge ROS interface to provide real-time observations of the current environment surrounding the robot. Periodically it will make an observation of the ar_markers that are currently surrounding the robot, transform the coordinates of those markers to a coordinate with respect to the base of the robot, and send these observations to the actuator node.
 
-Need to install AR_MARKERS PACKAGES!!
+To be able to transform coordinates to different frames, the [tf2](http://wiki.ros.org/tf2) library as well as the [tf2_ros](http://wiki.ros.org/tf2_ros) package that provides bindings for Python. If these packages are not yet installed, execute the following command:
+```bash
+sudo apt-get install ros-kinetic-tf2 ros-kinetic-tf2-ros ros-kinetic-tf2-tools ros-kinetic-tf
+```
+
+To be able to transform the location of the ar tag with respect to the camera to a coordinate in the frame that has the robot arm as its origin, ar marker 1 is attached to the robot base.
+
+<figure align="center">
+	<img src="images/robot_base_ar_marker_1.JPG?raw=true" alt="ar_marker_1 on robot base" style="width:50%"/>
+</figure>
+
+This marker is as a reference to the location of the robot and a static transformation is provided in the launch file of the observer node that transforms ar_marker_1 to the actual origin of the robot:
+```xml
+<node pkg="tf2_ros" type="static_transform_publisher" name="kinova_base_link_broadcaster" args="-0.0575 0.0275 0.047 0 0 0 ar_marker_1 m1n6s200_link_base" />
+```
+
+More information is provided in the [observer_node.launch](src/observer_node/launch/observer_node.launch) file.
 
 ### actuator_node
 
-Contains the actuation component that will send commands to the robot through a moveit configuration which was constructed specifically for the Mico robot arm.
+The actuator\_node ROS package contains the actuation component that will send commands to the robot through a [moveit configuration](dependencies/m1n6s200_moveit_config/launch/m1n6s200_demo.launch) which was constructed specifically for the Mico robot arm. This configuration was made using the [MoveIt! setup assistant](http://docs.ros.org/kinetic/api/moveit_tutorials/html/doc/setup_assistant/setup_assistant_tutorial.html) and is based on the configurations of other robots that are by default provided in the kinova-ros package.
 
-Executing catkin_make in the root of this workspace will build the project
+When launched, the actuator_node will send the robot to it's initial position. 
+<figure align="center">
+	<img src="images/robot_arm_start_position.JPG?raw=true" alt="ar_marker_1 on robot base" style="width:50%"/>
+</figure>
 
+After receiving the command from the main node, the actuator will deduce the action that it needs to do. Currently the only supported action is picking up a block and putting it on another block. For example:
+Put the red block on the blue block.
+
+Once the actuator has deduced the action as well as the blockes involved in the action, it will wait till it receives a message from the observer node on the <i>/observations</i> topic. In this message it will look for the ar tags that the blocks in question contain. If these ar tags are present, the moveit is called to plan a trajectory to the position of one of the ar tags. If moveit finds a trajectory, the action is executed by the robot.
 
 ## Built With
 
@@ -205,64 +273,13 @@ Executing catkin_make in the root of this workspace will build the project
 
 ## Authors
 
-* **Shani Vanlerberghe** - *Deploying speech to logic for in ROS*
-* **Pieter-Jan Coenen** - *The text to logic form parser*
+* **Shani Vanlerberghe**
 
-## License
+## Contributors
+* **Shani Vanlerberghe**
+* **Pedro Zuidberg Dos Martires**
+* **Wannes Meert**
+* **Luc De Raedt**
 
 ## Acknowledgments
-
-
-# Install instructions
-
-These instructions will give a detailed overview of the steps that were followed to get the different components of this system installed in case anyone would ever need to reinstall the system.
-
-```
-ROS kinetic
-Kinect camera
-Mico SDK
-Kinova ROS
-	- MoveIT
-	- Gazebo
-Distributional Clauses
-TF2_ROS
-Incorporating ROS and MoveIt	
-```
-
-## Prerequisites
-
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
-
-This should contain the following:
-- Version of linux, ros, python, c++,...
-- pip freeze overview
-- dependency management
-
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-This should contain:
-- Ros install instructions
-- Handling dependencies
-
-
-
+* **Pieter-Jan Coenen** - *The text to logic form parser*
