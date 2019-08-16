@@ -1,0 +1,6 @@
+[submodule "src/kinova-ros"]
+	path = src/kinova-ros
+	url = https://github.com/Kinovarobotics/kinova-ros.git
+[submodule "src/iai_kinect2"]
+	path = src/iai_kinect2
+	url = https://github.com/code-iai/iai_kinect2.git
