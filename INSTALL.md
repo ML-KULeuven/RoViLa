@@ -158,7 +158,9 @@ sudo cp ../platform/linux/udev/90-kinect2.rules /etc/udex/rules.d/
 ```
 
 If everything went well you should see a window showing 4 camera view, like this:
-INCLUDE IMAGE HERE
+<figure align="center">
+	<img src="images/Protonect.png?raw=true" alt="Overview ROS"/>
+</figure>
 
 ### iai_kinect2
 The iai_kinect2 repository contains ROS nodes that provide an interface to the kinect2 camera. Therefore this repository should be cloned and configured within the catkin\_workspace that contains the project that will use the kinect2 camera.
@@ -184,7 +186,9 @@ rosrun kinect2_viewer kinect2_viewer kinect2 sd cloud
 ```
 
 You should see the following:
-INCLUDE IMAGE HERE
+<figure align="center">
+	<img src="images/Kinect2_bridge.png?raw=true" alt="Overview ROS"/>
+</figure>
 
 ## CONFIGURING MICO ARM
 The Mico arm is a robot arm developed by Kinova. To be able to send commands to the robot arm from ROS the firmware on the robot has to be up to date. The versions originally used in this projects will be included here as well as instructions on how to install both the SDK and the firmware.
