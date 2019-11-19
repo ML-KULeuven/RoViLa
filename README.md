@@ -80,7 +80,7 @@ roslaunch kinova_bringup kinova_robot.launch kinova_robotType:=m1n6s200
 This should open the fingers on the robot
 You should then be able to call the following command to home the robot (from another terminal):
 ```bash
-rosservice call /m1n6s200_driver/in/home_arm
+rosservice call /j2n6s300_driver/in/home_arm
 ```
 
 And the arm should move to its home position.
